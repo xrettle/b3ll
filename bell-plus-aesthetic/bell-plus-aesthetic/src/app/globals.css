@@ -16,6 +16,12 @@
   --font-size-multiplier: 1;
   --text-color: 255, 255, 255;
   --panel-bg: rgba(26, 30, 32, 0.9);
+  --font-fira-code: 'Fira Code';
+}
+
+/* Font family utility class */
+.font-fira-code {
+  font-family: var(--font-fira-code), monospace;
 }
 
 /* Light theme variables */

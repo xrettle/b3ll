@@ -28,9 +28,6 @@ const ScheduleComponent = memo(function ScheduleComponent({ activeSchedule, asse
     // Set current schedule
     if (activeSchedule) {
       setCurrentSchedule(activeSchedule);
-    } else {
-      // If no schedule is provided, use the current day's schedule
-      setCurrentSchedule(getCurrentDaySchedule());
     }
 
     // Initial checks
@@ -43,6 +40,12 @@ const ScheduleComponent = memo(function ScheduleComponent({ activeSchedule, asse
 
     return () => clearInterval(themeInterval);
   }, [activeSchedule]);
+
+  useEffect(() => {
+    if (!currentSchedule && mounted) {
+      setCurrentSchedule(getCurrentDaySchedule());
+    }
+  }, [currentSchedule, mounted]);
 
   // Separate useEffect to handle period finding to avoid dependency issues
   useEffect(() => {
@@ -81,11 +84,6 @@ const ScheduleComponent = memo(function ScheduleComponent({ activeSchedule, asse
   }
   
   if (!currentSchedule) {
-    // Ensure we have a schedule even if none was provided
-    useEffect(() => {
-      setCurrentSchedule(getCurrentDaySchedule());
-    }, []);
-    
     return (
       <div className="w-full max-w-xl h-96 flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl">
         <div className="flex flex-col items-center gap-3">

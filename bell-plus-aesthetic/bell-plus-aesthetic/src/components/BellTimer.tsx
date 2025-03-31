@@ -391,7 +391,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
 
   const formatCountdown = useCallback(() => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }, [hours, minutes, seconds]);
+  }, []); // Remove unnecessary dependencies
 
   // The updateCountdown function with improved timing
   const updateCountdown = useCallback(() => {

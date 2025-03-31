@@ -306,11 +306,11 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
       }
     };
 
-    // Add global event listener
-    window.addEventListener('keydown', handleKeyDown as any);
+    // Add global event listener with proper typing
+    window.addEventListener('keydown', handleKeyDown as unknown as EventListener);
     
     return () => {
-      window.removeEventListener('keydown', handleKeyDown as any);
+      window.removeEventListener('keydown', handleKeyDown as unknown as EventListener);
     };
   }, [redirectKey, redirectUrl, isOpen, listeningForKey]);
 
