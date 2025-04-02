@@ -1,8 +1,8 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 
 interface InfoPanelProps {
   isOpen: boolean;
@@ -84,7 +84,7 @@ export function InfoPanel({ isOpen, onClose }: InfoPanelProps) {
             </div>
 
             {/* Content */}
-            <div className="p-5 max-h-[70vh] overflow-y-auto font-mono text-white/80" 
+            <div className="p-5 max-h-[60vh] overflow-y-hidden font-mono text-white/80" 
                  style={{ fontFamily: '"Fira Code", monospace' }}>
               <div className="space-y-6">
                 <div className="space-y-3">
@@ -144,17 +144,49 @@ export function InfoPanel({ isOpen, onClose }: InfoPanelProps) {
 }
 
 export function InfoButton({ onClick }: { onClick: () => void }) {
+  const [isLightTheme, setIsLightTheme] = useState(false);
+  
+  // Check for theme changes
+  useEffect(() => {
+    const checkTheme = () => {
+      const isLight = document.documentElement.classList.contains('light-theme');
+      setIsLightTheme(isLight);
+    };
+    
+    // Initial check
+    checkTheme();
+    
+    // Set up observer for theme changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+  
   return (
     <motion.button
       onClick={onClick}
-      className="fixed bottom-4 right-4 p-3 rounded-full bg-blue-500/80 text-white shadow-lg hover:bg-blue-600/80 transition-colors z-30"
+      className={`fixed bottom-6 right-6 p-3 rounded-full z-30 shadow-lg
+                ${isLightTheme ? 'bg-[#333]/10 text-[#333]/80' : 'bg-white/10 text-white/80'}`}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 1 }}
     >
-      <Info size={20} />
+      <div dangerouslySetInnerHTML={{
+        __html: `
+          <lord-icon
+            src="https://cdn.lordicon.com/nhfyhmlt.json"
+            trigger="hover"
+            colors="${isLightTheme ? 'primary:#121331,secondary:#08a88a' : 'primary:#ffffff,secondary:#08a88a'}"
+            style="width: 32px; height: 32px;">
+          </lord-icon>
+        `
+      }} />
     </motion.button>
   );
 }

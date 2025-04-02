@@ -71,8 +71,9 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentSecond = now.getSeconds();
+    const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
     
-    // Calculate next school day (8:25 AM)
+    // Calculate next school day with warning bell time (8:25 AM)
     const nextSchoolDay = new Date(now);
     
     // If it's already past school hours (after 3:03 PM), go to next day
@@ -80,59 +81,100 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
       nextSchoolDay.setDate(nextSchoolDay.getDate() + 1);
     }
     
-    // Set time to 8:25 AM
-    nextSchoolDay.setHours(8, 25, 0, 0);
+    // Set time to warning bell (8:25 AM for most days, 9:12 AM for Wednesday)
+    // First determine what day we're calculating for
+    const targetDay = nextSchoolDay.getDay();
     
-    // Skip weekends
-    const dayOfWeek = nextSchoolDay.getDay();
-    if (dayOfWeek === 0) { // Sunday, add 1 day
-      nextSchoolDay.setDate(nextSchoolDay.getDate() + 1);
-    } else if (dayOfWeek === 6) { // Saturday, add 2 days
-      nextSchoolDay.setDate(nextSchoolDay.getDate() + 2);
+    if (targetDay === 3) { // Wednesday
+      // Wednesday warning bell is at 9:12 AM
+      nextSchoolDay.setHours(9, 12, 0, 0);
+    } else {
+      // All other school days warning bell is at 8:25 AM
+      nextSchoolDay.setHours(8, 25, 0, 0);
     }
     
-    // Calculate milliseconds until next school day
-    const timeUntilNextSchoolDay = nextSchoolDay.getTime() - now.getTime();
+    // Skip weekends
+    if (targetDay === 0) { // Sunday, add 1 day
+      nextSchoolDay.setDate(nextSchoolDay.getDate() + 1);
+      // Reset to 8:25 AM since it's now Monday
+      nextSchoolDay.setHours(8, 25, 0, 0);
+    } else if (targetDay === 6) { // Saturday, add 2 days
+      nextSchoolDay.setDate(nextSchoolDay.getDate() + 2);
+      // Reset to 8:25 AM since it's now Monday
+      nextSchoolDay.setHours(8, 25, 0, 0);
+    }
     
-    // For progress calculation, we need total time (from 3:03 PM to 8:25 AM next school day)
-    // This is approximately 17 hours and 22 minutes = 62520000 ms
-    const totalTimeUntilNextSchoolDay = 17 * 60 * 60 * 1000 + 22 * 60 * 1000;
+    // Calculate milliseconds until next school day warning bell
+    const timeUntilNextWarningBell = nextSchoolDay.getTime() - now.getTime();
     
-    // Calculate elapsed time since 3:03 PM
+    console.log(`Next warning bell: ${nextSchoolDay.toLocaleString()}`);
+    console.log(`Time until next warning bell: ${Math.floor(timeUntilNextWarningBell / 1000 / 60)} minutes`);
+    
+    // For progress calculation, we need to determine the total time span
+    let totalTimeSpan = 0;
     let elapsedTime = 0;
-    if (currentHour >= 15 || (currentHour === 15 && currentMinute >= 3)) {
-      // After 3:03 PM, calculate elapsed time since 3:03 PM
-      elapsedTime = (currentHour - 15) * 60 * 60 * 1000 + 
-                    (currentMinute - 3) * 60 * 1000 + 
-                    currentSecond * 1000;
+    
+    // If we're outside school hours (after 3:03 PM or before 8:25 AM)
+    if (currentHour >= 15 || (currentHour === 15 && currentMinute >= 3) || 
+        currentHour < 8 || (currentHour === 8 && currentMinute < 25)) {
+      
+      // Calculate total time from end of school day (3:03 PM) to next warning bell
+      if (currentHour >= 15 || (currentHour === 15 && currentMinute >= 3)) {
+        // After 3:03 PM
+        const endOfSchoolDay = new Date(now);
+        endOfSchoolDay.setHours(15, 3, 0, 0);
+        
+        totalTimeSpan = nextSchoolDay.getTime() - endOfSchoolDay.getTime();
+        elapsedTime = now.getTime() - endOfSchoolDay.getTime();
+      } else {
+        // Before 8:25 AM (or 9:12 AM on Wednesday)
+        const previousDay = new Date(now);
+        previousDay.setDate(previousDay.getDate() - 1);
+        previousDay.setHours(15, 3, 0, 0);
+        
+        // Check if previous day was a weekend
+        const prevDayOfWeek = previousDay.getDay();
+        if (prevDayOfWeek === 0 || prevDayOfWeek === 6) {
+          // If previous day was weekend, use Friday 3:03 PM
+          previousDay.setDate(previousDay.getDate() - (prevDayOfWeek === 0 ? 2 : 1));
+        }
+        
+        totalTimeSpan = nextSchoolDay.getTime() - previousDay.getTime();
+        elapsedTime = now.getTime() - previousDay.getTime();
+      }
     } else {
-      // Before 3:03 PM, we're in the next day already, so calculate from previous day's 3:03 PM
-      elapsedTime = (currentHour + 9) * 60 * 60 * 1000 + 
-                    (currentMinute + 57) * 60 * 1000 + 
-                    currentSecond * 1000;
+      // During school hours, use the first period start and last period end
+      const firstPeriodStart = new Date(now);
+      firstPeriodStart.setHours(currentDay === 3 ? 9 : 8, currentDay === 3 ? 12 : 25, 0, 0);
+      
+      const lastPeriodEnd = new Date(now);
+      lastPeriodEnd.setHours(15, 3, 0, 0);
+      
+      totalTimeSpan = lastPeriodEnd.getTime() - firstPeriodStart.getTime();
+      elapsedTime = now.getTime() - firstPeriodStart.getTime();
     }
     
     // Set total time for progress calculation
-    setTotalTimeMs(totalTimeUntilNextSchoolDay);
+    setTotalTimeMs(totalTimeSpan);
     
     // Calculate progress (elapsed time / total time)
-    // For time until next school day, progress increases as we get closer
-    const progressValue = Math.min(1, elapsedTime / totalTimeUntilNextSchoolDay);
+    const progressValue = Math.min(1, Math.max(0, elapsedTime / totalTimeSpan));
     setProgress(progressValue);
     
-    return timeUntilNextSchoolDay;
+    return timeUntilNextWarningBell;
   }, []);
 
+  // Function to find current period
   const findCurrentPeriod = useCallback((now: Date): void => {
     if (!activeSchedule || !activeSchedule.periods || activeSchedule.periods.length === 0) {
       console.error("No schedule available or schedule has no periods");
       setCurrentPeriod("No schedule available");
-      setNextPeriodName("Next School Day");
+      setNextPeriodName("Next Warning Bell");
       setIsOutsideSchoolHours(true);
       
       // Set default countdown values
       const nextDayMs = calculateTimeUntilNextSchoolDay();
-      console.log(`Time until next school day: ${nextDayMs}ms`);
+      console.log(`Time until next warning bell: ${nextDayMs}ms`);
       setTimeValues(nextDayMs);
       return;
     }
@@ -177,12 +219,12 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
       if (now < firstPeriodStart || now >= lastPeriodEnd) {
         console.log("Outside school hours, setting to Free period");
         setCurrentPeriod("Free");
-        setNextPeriodName("Next School Day");
+        setNextPeriodName("Next Warning Bell");
         setIsOutsideSchoolHours(true);
 
         const nextDayMs = calculateTimeUntilNextSchoolDay();
         setTimeValues(nextDayMs);
-        setProgress(1);
+        // Progress is now calculated in calculateTimeUntilNextSchoolDay
         return;
       }
 
@@ -276,7 +318,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
 
       console.error("Could not determine current period with precision");
       setCurrentPeriod("Free");
-      setNextPeriodName("Next School Day");
+      setNextPeriodName("Next Warning Bell");
       setIsOutsideSchoolHours(true);
       const nextDayMs = calculateTimeUntilNextSchoolDay();
       setTimeValues(nextDayMs);
@@ -476,10 +518,10 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     let nextEventName: string = nextPeriodName;
     
     if (isOutsideSchoolHours) {
-      // Calculate time until next school day
+      // Calculate time until next school day warning bell
       remainingMs = calculateTimeUntilNextSchoolDay();
-      console.log(`Time until next school day: ${remainingMs}ms`);
-      nextEventName = "Next School Day";
+      console.log(`Time until next warning bell: ${remainingMs}ms`);
+      nextEventName = "Next Warning Bell";
     } else if (timeLeftMs > 0) {
       // Calculate remaining time based on actual system time, not the interval
       remainingMs = Math.max(0, timeLeftMs - timeDiff);
@@ -506,20 +548,13 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     setSeconds(secondsValue);
     setShowCountdown(remainingMs > 0);
     
-    // Update progress bar
-    if (!isOutsideSchoolHours && totalTimeMs > 0) {
-      const elapsedMs = totalTimeMs - remainingMs;
-      const progressValue = Math.min(1, elapsedMs / totalTimeMs);
-      setProgress(progressValue);
-    }
-    
     // Update document title
     if (mounted) {
       const formattedTime = `${hoursValue.toString().padStart(2, '0')}:${minutesValue.toString().padStart(2, '0')}:${secondsValue.toString().padStart(2, '0')}`;
       let titleText = "";
       
       if (isOutsideSchoolHours) {
-        titleText = `${formattedTime} until Next School Day`;
+        titleText = `${formattedTime} until Next Warning Bell`;
       } else {
         const periodDisplay = currentPeriod === "Free" ? "School Day" : currentPeriod;
         titleText = `${formattedTime} until ${nextEventName} | ${periodDisplay}`;
@@ -767,7 +802,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              Until {nextPeriodName || "Next School Day"}
+              Until {nextPeriodName || "Next Warning Bell"}
             </motion.div>
 
             <div className={`w-full h-2 ${getProgressBgClass()} rounded-full overflow-hidden mt-2`}>
