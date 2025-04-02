@@ -13,8 +13,12 @@ const BellTimer = dynamic(() => import('@/components/BellTimer').then(mod => ({ 
   loading: () => (
     <div className="flex items-center justify-center h-screen">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-32 w-32 rounded-full border-t-4 border-blue-500 animate-spin"></div>
-        <p className="text-xl font-mono opacity-70">Loading timer...</p>
+        <div className="flex space-x-2">
+          <div className="w-3 h-3 rounded-full bg-[#333] dark:bg-white animate-bounce"></div>
+          <div className="w-3 h-3 rounded-full bg-[#333] dark:bg-white animate-bounce200"></div>
+          <div className="w-3 h-3 rounded-full bg-[#333] dark:bg-white animate-bounce300"></div>
+        </div>
+        <p className="text-xl font-mono opacity-70">Loading b3ll...</p>
       </div>
     </div>
   )
@@ -26,7 +30,11 @@ const Schedule = dynamic(() => import('@/components/Schedule'), {
   loading: () => (
     <div className="flex items-center justify-center h-40 p-8 bg-white/5 backdrop-blur-md rounded-xl">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-6 w-6 rounded-full border-t-2 border-blue-500 animate-spin"></div>
+        <div className="flex space-x-2">
+          <div className="w-2 h-2 rounded-full bg-[#333] dark:bg-white animate-bounce"></div>
+          <div className="w-2 h-2 rounded-full bg-[#333] dark:bg-white animate-bounce200"></div>
+          <div className="w-2 h-2 rounded-full bg-[#333] dark:bg-white animate-bounce300"></div>
+        </div>
         <p className="text-sm font-mono opacity-60">Loading schedule...</p>
       </div>
     </div>
@@ -194,7 +202,11 @@ export default function Home() {
     return (
       <div className="bg-[#151718] h-screen w-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-32 w-32 rounded-full border-t-4 border-blue-500 animate-spin"></div>
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 rounded-full bg-[#333] dark:bg-white animate-bounce"></div>
+            <div className="w-3 h-3 rounded-full bg-[#333] dark:bg-white animate-bounce200"></div>
+            <div className="w-3 h-3 rounded-full bg-[#333] dark:bg-white animate-bounce300"></div>
+          </div>
           <p className="text-xl font-mono text-white/70">Loading application...</p>
           <p className="text-sm font-mono text-white/50">This may take a moment on first load</p>
         </div>

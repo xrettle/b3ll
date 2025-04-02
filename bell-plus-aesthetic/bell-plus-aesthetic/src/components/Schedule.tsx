@@ -212,7 +212,7 @@ const ScheduleComponent = memo(function ScheduleComponent({ activeSchedule, asse
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 1 }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-2">
             <Bell size={14} className="text-white/70" />
             <span>b3ll</span>

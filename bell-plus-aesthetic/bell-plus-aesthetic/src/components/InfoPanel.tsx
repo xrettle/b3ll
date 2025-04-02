@@ -169,8 +169,7 @@ export function InfoButton({ onClick }: { onClick: () => void }) {
   return (
     <motion.button
       onClick={onClick}
-      className={`fixed bottom-6 right-6 p-3 rounded-full z-30 shadow-lg
-                ${isLightTheme ? 'bg-[#333]/10 text-[#333]/80' : 'bg-white/10 text-white/80'}`}
+      className={`fixed bottom-6 right-6 z-50 flex items-center justify-center`}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       initial={{ opacity: 0, y: 10 }}
