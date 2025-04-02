@@ -51,6 +51,23 @@ export default {
           '5': 'hsl(var(--chart-5))'
         }
       },
+      animation: {
+        'bounce': 'bounce 1s infinite',
+        'bounce200': 'bounce 1s infinite 0.2s',
+        'bounce300': 'bounce 1s infinite 0.4s',
+      },
+      keyframes: {
+        bounce: {
+          '0%, 100%': {
+            transform: 'translateY(0)',
+            animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)',
+          },
+          '50%': {
+            transform: 'translateY(-25%)',
+            animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+          },
+        },
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

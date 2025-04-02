@@ -51,18 +51,13 @@ export default function ClientBody({ children }: { children: React.ReactNode }) 
   if (loading) {
     return (
       <div className={`fixed inset-0 flex flex-col items-center justify-center ${isLightTheme ? 'bg-[#f0f2f5]' : 'bg-[#151718]'} z-50`}>
-        <div dangerouslySetInnerHTML={{
-          __html: `
-            <lord-icon
-              src="https://cdn.lordicon.com/jpgpblwn.json"
-              trigger="loop"
-              colors="${isLightTheme ? 'primary:#121331,secondary:#08a88a' : 'primary:#ffffff,secondary:#08a88a'}"
-              style="width: 250px; height: 250px;">
-            </lord-icon>
-          `
-        }} />
+        <div className="flex space-x-2">
+          <div className={`w-3 h-3 rounded-full ${isLightTheme ? 'bg-[#333]' : 'bg-white'} animate-bounce`}></div>
+          <div className={`w-3 h-3 rounded-full ${isLightTheme ? 'bg-[#333]' : 'bg-white'} animate-bounce200`}></div>
+          <div className={`w-3 h-3 rounded-full ${isLightTheme ? 'bg-[#333]' : 'bg-white'} animate-bounce300`}></div>
+        </div>
         <p className={`mt-4 text-lg font-mono ${isLightTheme ? 'text-[#333]' : 'text-white'}`} style={{ fontFamily: '"Fira Code", monospace' }}>
-          Loading Bell Timer...
+          Loading b3ll...
         </p>
       </div>
     );

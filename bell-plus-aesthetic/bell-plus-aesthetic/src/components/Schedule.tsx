@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
+import { Bell } from 'lucide-react';
 import { Schedule as ScheduleType, Period, getAssemblyPeriodName, getCurrentDaySchedule } from '@/data/schedules';
 
 interface ScheduleProps {
@@ -211,8 +212,13 @@ const ScheduleComponent = memo(function ScheduleComponent({ activeSchedule, asse
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 1 }}
       >
-        <span>Bell System</span>
-        <span>{new Date().getFullYear()}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Bell size={14} className="text-white/70" />
+            <span>b3ll</span>
+          </div>
+          <span>{new Date().getFullYear()}</span>
+        </div>
       </motion.div>
     </motion.div>
   );

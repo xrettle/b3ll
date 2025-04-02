@@ -180,7 +180,7 @@ export function InfoButton({ onClick }: { onClick: () => void }) {
       <div dangerouslySetInnerHTML={{
         __html: `
           <lord-icon
-            src="https://cdn.lordicon.com/nhfyhmlt.json"
+            src="https://cdn.lordicon.com/jnzhohhs.json"
             trigger="hover"
             colors="${isLightTheme ? 'primary:#121331,secondary:#08a88a' : 'primary:#ffffff,secondary:#08a88a'}"
             style="width: 32px; height: 32px;">

@@ -11,7 +11,7 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "Bell Timer",
+  title: "b3ll",
   description: "A bell timer for school schedules",
   icons: {
     icon: '/favicon.svg',

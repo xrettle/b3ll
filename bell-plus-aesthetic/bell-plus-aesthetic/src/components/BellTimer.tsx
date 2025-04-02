@@ -735,7 +735,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
 
   useEffect(() => {
     return () => {
-      document.title = "Bell Timer";
+      document.title = "b3ll";
       updateFavicon(60, 0, true);
     };
   }, []);

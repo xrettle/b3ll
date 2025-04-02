@@ -508,14 +508,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                     >
                       <div className="space-y-4">
                         <div className="flex items-center space-x-2">
-                          <ExternalLink size={16} className={isLightTheme ? "text-blue-600" : "text-blue-400"} />
-                          <h3 className={`text-md font-semibold ${isLightTheme ? "text-blue-600" : "text-blue-400"}`}>
+                          <ExternalLink size={16} className={isLightTheme ? "text-[#333]" : "text-white"} />
+                          <h3 className={`text-md font-semibold ${isLightTheme ? "text-[#333]" : "text-white"}`}>
                             Redirect Key
                           </h3>
                         </div>
                         
                         <p className={`text-xs ${isLightTheme ? "text-[#333]/60" : "text-white/60"}`}>
-                          Configure a key to quickly redirect to your favorite website.
+                          Configure a key to quickly redirect to any website.
                         </p>
 
                         {/* Redirect Key Setting */}
