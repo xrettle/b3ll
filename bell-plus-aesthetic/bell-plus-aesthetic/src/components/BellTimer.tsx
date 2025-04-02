@@ -564,7 +564,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
       document.title = titleText;
     }
   }, [isOutsideSchoolHours, calculateTimeUntilNextSchoolDay, mounted, currentPeriod,
-      nextPeriodName, timeLeftMs, totalTimeMs, findCurrentPeriod, hours, minutes, seconds]);
+      nextPeriodName, timeLeftMs, findCurrentPeriod, hours, minutes, seconds]);
 
   // Replace the setInterval effect with requestAnimationFrame for smoother updates
   useEffect(() => {

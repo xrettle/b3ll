@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en" className={firaCode.variable}>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <script src="https://cdn.lordicon.com/lordicon.js"></script>
+        <script async src="https://cdn.lordicon.com/lordicon.js"></script>
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <ClientBody>{children}</ClientBody>
