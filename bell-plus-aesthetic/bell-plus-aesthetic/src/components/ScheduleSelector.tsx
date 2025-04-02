@@ -154,7 +154,7 @@ export function ScheduleSelector({
       return `Assembly ${assemblyLetter}`;
     } else if (currentSchedule === 'minimumDay') {
       return 'Minimum Day';
-    } else if (['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(currentSchedule)) {
+    } else if (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'holiday'].includes(currentSchedule)) {
       // Capitalize first letter of day
       return currentSchedule.charAt(0).toUpperCase() + currentSchedule.slice(1);
     } else {
@@ -170,8 +170,7 @@ export function ScheduleSelector({
       case 'wednesday': return <Cpu size={12} />;
       case 'thursday': return <Monitor size={12} />;
       case 'friday': return <Keyboard size={12} />;
-      case 'saturday': return <Coffee size={12} />;
-      case 'sunday': return <Home size={12} />;
+      case 'holiday': return <Coffee size={12} />;
       default: return <Calendar size={12} />;
     }
   };
@@ -186,8 +185,8 @@ export function ScheduleSelector({
       case 3: return 'Wednesday';
       case 4: return 'Thursday';
       case 5: return 'Friday';
-      case 6: return 'Saturday';
-      case 0: return 'Sunday';
+      case 0:
+      case 6: return 'Holiday';
       default: return 'Today';
     }
   };
@@ -257,7 +256,7 @@ export function ScheduleSelector({
                   <ScheduleOption
                     icon={<Calendar size={12} />}
                     label={`Today (${getTodayName()})`}
-                    isActive={['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(currentSchedule) && currentSchedule === getCurrentDayScheduleName()}
+                    isActive={['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'holiday'].includes(currentSchedule) && currentSchedule === getCurrentDayScheduleName()}
                     onClick={() => handleScheduleChange(getCurrentDayScheduleName())}
                     isLightTheme={isLightTheme}
                   />
@@ -265,7 +264,7 @@ export function ScheduleSelector({
                   <ScheduleOption
                     icon={<Calendar size={12} />}
                     label="Select Day..."
-                    isActive={['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(currentSchedule) && currentSchedule !== getCurrentDayScheduleName()}
+                    isActive={['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'holiday'].includes(currentSchedule) && currentSchedule !== getCurrentDayScheduleName()}
                     onClick={() => handleScheduleChange('selectDay')}
                     isLightTheme={isLightTheme}
                   />
@@ -332,18 +331,10 @@ export function ScheduleSelector({
                   />
 
                   <ScheduleOption
-                    icon={getDayIcon('saturday')}
-                    label="Saturday"
-                    isActive={currentSchedule === 'saturday'}
-                    onClick={() => handleDayScheduleChange('saturday')}
-                    isLightTheme={isLightTheme}
-                  />
-
-                  <ScheduleOption
-                    icon={getDayIcon('sunday')}
-                    label="Sunday"
-                    isActive={currentSchedule === 'sunday'}
-                    onClick={() => handleDayScheduleChange('sunday')}
+                    icon={getDayIcon('holiday')}
+                    label="Holiday"
+                    isActive={currentSchedule === 'holiday'}
+                    onClick={() => handleDayScheduleChange('holiday')}
                     isLightTheme={isLightTheme}
                   />
                 </div>
@@ -435,16 +426,23 @@ function ScheduleOption({ icon, label, isActive, onClick, isLightTheme }: {
 // Helper function to get the current day's schedule name
 function getCurrentDayScheduleName(): string {
   const now = new Date();
-  const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
-
-  switch (day) {
-    case 0: return 'sunday';
-    case 1: return 'monday';
-    case 2: return 'tuesday';
-    case 3: return 'wednesday';
-    case 4: return 'thursday';
-    case 5: return 'friday';
-    case 6: return 'saturday';
-    default: return 'monday'; // Fallback (should never happen)
+  const day = now.getDay();
+  
+  switch(day) {
+    case 0: // Sunday
+    case 6: // Saturday
+      return 'holiday';
+    case 1:
+      return 'monday';
+    case 2:
+      return 'tuesday';
+    case 3:
+      return 'wednesday';
+    case 4:
+      return 'thursday';
+    case 5:
+      return 'friday';
+    default:
+      return 'monday';
   }
 }

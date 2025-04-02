@@ -26,6 +26,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
   const [isLightTheme, setIsLightTheme] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [use12HourFormat, setUse12HourFormat] = useState(false);
+  const [showScheduleSelector, setShowScheduleSelector] = useState(true);
 
   // We'll use these refs to improve timing precision
   const lastUpdateTimeRef = useRef<number>(Date.now());
@@ -39,125 +40,100 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
   const [showCountdown, setShowCountdown] = useState<boolean>(false);
   const [isOutsideSchoolHours, setIsOutsideSchoolHours] = useState<boolean>(false);
 
-  useEffect(() => {
-    setMounted(true);
-    return () => {
-      setMounted(false);
-    };
-  }, []);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const isLight = document.documentElement.classList.contains('light-theme');
-      setIsLightTheme(isLight);
-    };
-
-    const checkClockFormat = () => {
-      const use12Hour = localStorage.getItem('bell-timer-12hour-clock') === 'true';
-      setUse12HourFormat(use12Hour);
-    };
-
-    checkTheme();
-    checkClockFormat();
-
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    const handleClockFormatChange = () => {
-      checkClockFormat();
-    };
-
-    window.addEventListener('clockFormatChanged', handleClockFormatChange);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('clockFormatChanged', handleClockFormatChange);
-    };
-  }, []);
-
-  const parseTimeString = useCallback((timeStr: string): Date => {
-    const now = new Date();
-    const isPM = timeStr.toLowerCase().includes('pm');
-    const isAM = timeStr.toLowerCase().includes('am');
-
-    const cleanTimeStr = timeStr.replace(/\s*(am|pm)\s*/i, '');
-
-    const [hoursStr, minutesStr] = cleanTimeStr.split(':');
-    let hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-
-    if (isPM && hours < 12) {
-      hours += 12;
-    } else if (isAM && hours === 12) {
-      hours = 0;
-    }
-
-    if (!isPM && !isAM) {
-      if ((hours >= 1 && hours <= 6) || hours === 12) {
-        if (hours !== 12) hours += 12;
-      }
-    }
-
-    const date = new Date(now);
+  // Parse time string in format "HH:MM" to Date object
+  const parseTimeString = useCallback((timeString: string): Date => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const date = new Date();
     date.setHours(hours, minutes, 0, 0);
-
     return date;
   }, []);
 
-  const setTimeValues = useCallback((remainingMs: number) => {
-    const hrs = Math.floor(remainingMs / 3600000);
-    const mins = Math.floor((remainingMs % 3600000) / 60000);
-    const secs = Math.floor((remainingMs % 60000) / 1000);
-
-    setTimeLeftMs(remainingMs);
-    setHours(hrs);
-    setMinutes(mins);
-    setSeconds(secs);
-    setShowCountdown(true);
+  // Function to calculate time values (hours, minutes, seconds) from milliseconds
+  const setTimeValues = useCallback((timeLeftMs: number) => {
+    setTimeLeftMs(timeLeftMs);
+    
+    // Calculate hours, minutes, seconds
+    const hours = Math.floor(timeLeftMs / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
+    
+    setHours(hours);
+    setMinutes(minutes);
+    setSeconds(seconds);
+    
+    // Only show countdown animation if there's actually time left
+    setShowCountdown(timeLeftMs > 0);
   }, []);
 
-  const calculateTimeUntilNextSchoolDay = useCallback(() => {
+  // Improved function to calculate time until next school day
+  const calculateTimeUntilNextSchoolDay = useCallback((): number => {
     const now = new Date();
-    console.log(`Calculating time until next school day from ${now.toLocaleString()}`);
-
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(8, 25, 0, 0);
-
-    const tomorrowDay = tomorrow.getDay();
-    if (tomorrowDay === 0) {
-      console.log("Tomorrow is Sunday, skipping to Monday");
-      tomorrow.setDate(tomorrow.getDate() + 1);
-    } else if (tomorrowDay === 6) {
-      console.log("Tomorrow is Saturday, skipping to Monday");
-      tomorrow.setDate(tomorrow.getDate() + 2);
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentSecond = now.getSeconds();
+    
+    // Calculate next school day (8:25 AM)
+    const nextSchoolDay = new Date(now);
+    
+    // If it's already past school hours (after 3:03 PM), go to next day
+    if (currentHour >= 15 || (currentHour === 15 && currentMinute >= 3)) {
+      nextSchoolDay.setDate(nextSchoolDay.getDate() + 1);
     }
-
-    if (now.getHours() < 8 || (now.getHours() === 8 && now.getMinutes() < 25)) {
-      const todayStart = new Date(now);
-      todayStart.setHours(8, 25, 0, 0);
-      const todayDay = now.getDay();
-      if (todayDay >= 1 && todayDay <= 5) {
-        console.log(`It's before school hours today (weekday), using today's start time: ${todayStart.toLocaleString()}`);
-        tomorrow.setTime(todayStart.getTime());
-      }
+    
+    // Set time to 8:25 AM
+    nextSchoolDay.setHours(8, 25, 0, 0);
+    
+    // Skip weekends
+    const dayOfWeek = nextSchoolDay.getDay();
+    if (dayOfWeek === 0) { // Sunday, add 1 day
+      nextSchoolDay.setDate(nextSchoolDay.getDate() + 1);
+    } else if (dayOfWeek === 6) { // Saturday, add 2 days
+      nextSchoolDay.setDate(nextSchoolDay.getDate() + 2);
     }
-
-    const timeLeftMs = tomorrow.getTime() - now.getTime();
-    console.log(`Next school day at: ${tomorrow.toLocaleString()}`);
-    console.log(`Time until next school day: ${Math.floor(timeLeftMs / 1000 / 60)} minutes`);
-
-    return timeLeftMs;
+    
+    // Calculate milliseconds until next school day
+    const timeUntilNextSchoolDay = nextSchoolDay.getTime() - now.getTime();
+    
+    // For progress calculation, we need total time (from 3:03 PM to 8:25 AM next school day)
+    // This is approximately 17 hours and 22 minutes = 62520000 ms
+    const totalTimeUntilNextSchoolDay = 17 * 60 * 60 * 1000 + 22 * 60 * 1000;
+    
+    // Calculate elapsed time since 3:03 PM
+    let elapsedTime = 0;
+    if (currentHour >= 15 || (currentHour === 15 && currentMinute >= 3)) {
+      // After 3:03 PM, calculate elapsed time since 3:03 PM
+      elapsedTime = (currentHour - 15) * 60 * 60 * 1000 + 
+                    (currentMinute - 3) * 60 * 1000 + 
+                    currentSecond * 1000;
+    } else {
+      // Before 3:03 PM, we're in the next day already, so calculate from previous day's 3:03 PM
+      elapsedTime = (currentHour + 9) * 60 * 60 * 1000 + 
+                    (currentMinute + 57) * 60 * 1000 + 
+                    currentSecond * 1000;
+    }
+    
+    // Set total time for progress calculation
+    setTotalTimeMs(totalTimeUntilNextSchoolDay);
+    
+    // Calculate progress (elapsed time / total time)
+    // For time until next school day, progress increases as we get closer
+    const progressValue = Math.min(1, elapsedTime / totalTimeUntilNextSchoolDay);
+    setProgress(progressValue);
+    
+    return timeUntilNextSchoolDay;
   }, []);
 
-  // Function to find current period based on time
   const findCurrentPeriod = useCallback((now: Date): void => {
     if (!activeSchedule || !activeSchedule.periods || activeSchedule.periods.length === 0) {
       console.error("No schedule available or schedule has no periods");
       setCurrentPeriod("No schedule available");
+      setNextPeriodName("Next School Day");
+      setIsOutsideSchoolHours(true);
+      
+      // Set default countdown values
+      const nextDayMs = calculateTimeUntilNextSchoolDay();
+      console.log(`Time until next school day: ${nextDayMs}ms`);
+      setTimeValues(nextDayMs);
       return;
     }
 
@@ -314,35 +290,121 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     }
   }, [activeSchedule, assemblyLetter, currentSchedule, parseTimeString, calculateTimeUntilNextSchoolDay, setTimeValues]);
 
+  // Handle schedule change from the schedule selector
+  const handleScheduleChange = useCallback((scheduleName: string) => {
+    console.log(`Changing schedule to: ${scheduleName}`);
+    const newSchedule = schedules[scheduleName];
+    if (newSchedule) {
+      setActiveSchedule(newSchedule);
+      setCurrentSchedule(scheduleName);
+      setScheduleName(newSchedule.displayName);
+      
+      // Save the selected schedule to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bell-timer-schedule', scheduleName);
+      }
+      
+      // Recalculate current period with the new schedule
+      const now = new Date();
+      findCurrentPeriod(now);
+
+      if (onScheduleUpdate) {
+        onScheduleUpdate(newSchedule, assemblyLetter);
+      }
+    }
+  }, [assemblyLetter, onScheduleUpdate, findCurrentPeriod]);
+
+  // Handle assembly letter change
+  const handleAssemblyLetterChange = useCallback((letter: string) => {
+    setAssemblyLetter(letter);
+
+    if (onScheduleUpdate && currentSchedule === 'assembly') {
+      onScheduleUpdate(activeSchedule, letter);
+    }
+  }, [activeSchedule, currentSchedule, onScheduleUpdate]);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => {
+      setMounted(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      const isLight = document.documentElement.classList.contains('light-theme');
+      setIsLightTheme(isLight);
+    };
+
+    const checkClockFormat = () => {
+      const use12Hour = localStorage.getItem('bell-timer-12hour') === 'true';
+      setUse12HourFormat(use12Hour);
+    };
+
+    checkTheme();
+    checkClockFormat();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    const handleClockFormatChange = () => {
+      checkClockFormat();
+    };
+
+    window.addEventListener('clockFormatChanged', handleClockFormatChange);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('clockFormatChanged', handleClockFormatChange);
+    };
+  }, []);
+
   useEffect(() => {
     if (!mounted) return;
-
+    
     console.log("Initializing timer with current schedule");
 
     const now = new Date();
     console.log(`Current time: ${now.toLocaleString()}`);
     setCurrentTime(now);
 
-    const dayOfWeek = now.getDay();
+    // Try to get saved schedule from localStorage first
     let scheduleKey: string;
-    switch (dayOfWeek) {
-      case 0: scheduleKey = 'sunday'; break;
-      case 1: scheduleKey = 'monday'; break;
-      case 2: scheduleKey = 'tuesday'; break;
-      case 3: scheduleKey = 'wednesday'; break;
-      case 4: scheduleKey = 'thursday'; break;
-      case 5: scheduleKey = 'friday'; break;
-      case 6: scheduleKey = 'saturday'; break;
-      default: scheduleKey = 'monday';
+    if (typeof window !== 'undefined') {
+      const savedSchedule = localStorage.getItem('bell-timer-schedule');
+      if (savedSchedule && schedules[savedSchedule]) {
+        console.log(`Using saved schedule from localStorage: ${savedSchedule}`);
+        scheduleKey = savedSchedule;
+      } else {
+        // Fall back to current day if no saved schedule
+        const dayOfWeek = now.getDay();
+        switch (dayOfWeek) {
+          case 0: scheduleKey = 'holiday'; break; // Sunday
+          case 1: scheduleKey = 'monday'; break;
+          case 2: scheduleKey = 'tuesday'; break;
+          case 3: scheduleKey = 'wednesday'; break;
+          case 4: scheduleKey = 'thursday'; break;
+          case 5: scheduleKey = 'friday'; break;
+          case 6: scheduleKey = 'holiday'; break; // Saturday
+          default: scheduleKey = 'monday';
+        }
+        console.log(`No saved schedule, using day-based schedule: ${scheduleKey}`);
+      }
+    } else {
+      // Server-side rendering fallback
+      scheduleKey = 'monday';
     }
 
     console.log(`Setting initial schedule to: ${scheduleKey}`);
 
-    const todaySchedule = schedules[scheduleKey];
+    const selectedSchedule = schedules[scheduleKey];
 
-    setActiveSchedule(todaySchedule);
+    setActiveSchedule(selectedSchedule);
     setCurrentSchedule(scheduleKey);
-    setScheduleName(todaySchedule.displayName);
+    setScheduleName(selectedSchedule.displayName);
 
     findCurrentPeriod(now);
 
@@ -351,30 +413,30 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     updateFavicon(60, 0, false);
 
     if (onScheduleUpdate) {
-      onScheduleUpdate(todaySchedule);
+      onScheduleUpdate(selectedSchedule);
     }
   }, [mounted, findCurrentPeriod, onScheduleUpdate]);
 
-  const handleScheduleChange = useCallback((scheduleName: string) => {
-    const newSchedule = schedules[scheduleName];
-    if (newSchedule) {
-      setActiveSchedule(newSchedule);
-      setCurrentSchedule(scheduleName);
-      setScheduleName(newSchedule.displayName);
-
-      if (onScheduleUpdate) {
-        onScheduleUpdate(newSchedule, assemblyLetter);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (containerRef.current) {
+        const scrollPosition = window.scrollY;
+        const windowHeight = window.innerHeight;
+        
+        // Hide schedule selector when scrolled more than 50% of the window height
+        if (scrollPosition > windowHeight * 0.5) {
+          setShowScheduleSelector(false);
+        } else {
+          setShowScheduleSelector(true);
+        }
       }
-    }
-  }, [assemblyLetter, onScheduleUpdate]);
+    };
 
-  const handleAssemblyLetterChange = useCallback((letter: string) => {
-    setAssemblyLetter(letter);
-
-    if (onScheduleUpdate && currentSchedule === 'assembly') {
-      onScheduleUpdate(activeSchedule, letter);
-    }
-  }, [activeSchedule, currentSchedule, onScheduleUpdate]);
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [mounted]);
 
   const formatTime = (date: Date): string => {
     const hours = date.getHours();
@@ -391,7 +453,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
 
   const formatCountdown = useCallback(() => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }, []); // Remove unnecessary dependencies
+  }, [hours, minutes, seconds]);
 
   // The updateCountdown function with improved timing
   const updateCountdown = useCallback(() => {
@@ -404,115 +466,70 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     // Set current time for period calculations
     setCurrentTime(now);
 
+    // Log current state for debugging
+    console.log(`Current time: ${now.toLocaleTimeString()}`);
+    console.log(`isOutsideSchoolHours: ${isOutsideSchoolHours}`);
+    console.log(`timeLeftMs: ${timeLeftMs}`);
+    console.log(`Current hours:minutes:seconds: ${hours}:${minutes}:${seconds}`);
+
     let remainingMs: number = 0;
     let nextEventName: string = nextPeriodName;
     
     if (isOutsideSchoolHours) {
+      // Calculate time until next school day
       remainingMs = calculateTimeUntilNextSchoolDay();
+      console.log(`Time until next school day: ${remainingMs}ms`);
       nextEventName = "Next School Day";
     } else if (timeLeftMs > 0) {
       // Calculate remaining time based on actual system time, not the interval
       remainingMs = Math.max(0, timeLeftMs - timeDiff);
-    } else if (activeSchedule && activeSchedule.periods) {
+      console.log(`Remaining time in current period: ${remainingMs}ms`);
+    } else {
       // If we're at the end of a period, find the next period
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      const currentTimeMinutes = currentHour * 60 + currentMinute;
-      
-      // Find the next period that hasn't started yet
-      let foundNextPeriod = false;
-      for (let i = 0; i < activeSchedule.periods.length - 1; i++) {
-        const periodStart = parseTimeString(activeSchedule.periods[i].startTime);
-        const periodStartMinutes = periodStart.getHours() * 60 + periodStart.getMinutes();
-        
-        if (currentTimeMinutes < periodStartMinutes) {
-          // Found the next period
-          remainingMs = periodStart.getTime() - now.getTime();
-          nextEventName = activeSchedule.periods[i].name;
-          setNextPeriodName(nextEventName);
-          foundNextPeriod = true;
-          break;
-        }
-      }
-      
-      // If no next period found, use end of day
-      if (!foundNextPeriod) {
-        remainingMs = calculateTimeUntilNextSchoolDay();
-        nextEventName = "Next School Day";
-        setNextPeriodName(nextEventName);
-      }
+      console.log("End of period reached, finding next period");
+      findCurrentPeriod(now);
+      return; // findCurrentPeriod will set the time values
     }
 
-    // Calculate exact seconds without rounding for more accurate display
+    // Update time values
     const totalSeconds = Math.floor(remainingMs / 1000);
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-
-    // Always update time values to ensure accuracy
-    setTimeLeftMs(remainingMs);
-    setHours(hrs);
-    setMinutes(mins);
-    setSeconds(secs);
+    const hoursValue = Math.floor(totalSeconds / 3600);
+    const minutesValue = Math.floor((totalSeconds % 3600) / 60);
+    const secondsValue = totalSeconds % 60;
     
-    if (!showCountdown) {
-      setShowCountdown(true);
-    }
-
+    console.log(`Setting countdown to: ${hoursValue}:${minutesValue}:${secondsValue}`);
+    
+    // Update state
+    setTimeLeftMs(remainingMs);
+    setHours(hoursValue);
+    setMinutes(minutesValue);
+    setSeconds(secondsValue);
+    setShowCountdown(remainingMs > 0);
+    
     // Update progress bar
-    if (totalTimeMs > 0) {
-      const newProgress = Math.max(0, Math.min(100, 100 - (remainingMs / totalTimeMs) * 100));
-      setProgress(newProgress);
+    if (!isOutsideSchoolHours && totalTimeMs > 0) {
+      const elapsedMs = totalTimeMs - remainingMs;
+      const progressValue = Math.min(1, elapsedMs / totalTimeMs);
+      setProgress(progressValue);
     }
-
-    try {
-      // Always update favicon to ensure consistency
-      updateFavicon(mins, secs, isOutsideSchoolHours);
-    } catch (error) {
-      console.error("Favicon update error:", error);
-    }
-
-    // Update the document title immediately
-    if (mounted && currentPeriod !== 'Loading...') {
-      let titleText = '';
-      let displayPeriod = currentPeriod;
-
-      if (currentSchedule === 'assembly') {
-        if (/^[A-H]$/.test(currentPeriod)) {
-          if (currentPeriod === assemblyLetter) {
-            displayPeriod = 'Assembly';
-          } else {
-            displayPeriod = assemblyToPeriodMap[currentPeriod] || currentPeriod;
-          }
-        }
-      }
-
-      // Format the countdown for the title
-      if (hrs > 0) {
-        titleText = `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    // Update document title
+    if (mounted) {
+      const formattedTime = `${hoursValue.toString().padStart(2, '0')}:${minutesValue.toString().padStart(2, '0')}:${secondsValue.toString().padStart(2, '0')}`;
+      let titleText = "";
+      
+      if (isOutsideSchoolHours) {
+        titleText = `${formattedTime} until Next School Day`;
       } else {
-        titleText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const periodDisplay = currentPeriod === "Free" ? "School Day" : currentPeriod;
+        titleText = `${formattedTime} until ${nextEventName} | ${periodDisplay}`;
       }
       
-      // Add the next event information
-      let displayNextEvent = nextEventName;
-      if (nextEventName === 'Next School Day') {
-        displayNextEvent = 'Next Day';
-      } else if (currentSchedule === 'assembly' && /^[A-H]$/.test(nextEventName)) {
-        if (nextEventName === assemblyLetter) {
-          displayNextEvent = 'Assembly';
-        } else {
-          displayNextEvent = assemblyToPeriodMap[nextEventName] || nextEventName;
-        }
-      }
-      
-      titleText += ` | ${displayNextEvent}`;
-      
-      // Set the document title directly without checking if it's changed
+      // Set the document title directly
       document.title = titleText;
     }
   }, [isOutsideSchoolHours, calculateTimeUntilNextSchoolDay, mounted, currentPeriod,
-      currentSchedule, assemblyLetter, nextPeriodName, hours, minutes, seconds, showCountdown, timeLeftMs, totalTimeMs, activeSchedule, parseTimeString]);
+      nextPeriodName, timeLeftMs, totalTimeMs, findCurrentPeriod, hours, minutes, seconds]);
 
   // Replace the setInterval effect with requestAnimationFrame for smoother updates
   useEffect(() => {
@@ -544,26 +561,28 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
     
     // Backup interval to ensure updates even when tab is inactive
     const backupIntervalId = setInterval(() => {
-      const now = new Date();
-      const currentSecond = now.getSeconds();
-      
-      // If the second has changed since our last update, force an update
-      if (currentSecond !== lastSecond) {
-        lastSecond = currentSecond;
-        updateCountdown();
-      }
-    }, 100); // Check frequently to catch any missed seconds
+      updateCountdown();
+    }, 1000);
     
-    return () => {
-      // Clean up all timers
-      cancelAnimationFrame(animationFrameId);
-      clearInterval(backupIntervalId);
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-        countdownIntervalRef.current = null;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // When tab becomes visible again, update immediately
+        updateCountdown();
+        animationFrameId = requestAnimationFrame(updateFrame);
+      } else {
+        // When tab is hidden, cancel animation frame to save resources
+        cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [updateCountdown, mounted]);
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      cancelAnimationFrame(animationFrameId);
+      clearInterval(backupIntervalId);
+    };
+  }, [mounted, updateCountdown]);
 
   // This effect runs when the current time changes to update the period
   useEffect(() => {
@@ -696,11 +715,13 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
       className="flex flex-col items-center justify-center min-h-screen w-full relative overflow-hidden font-mono"
       style={{ fontFamily: '"Fira Code", monospace' }}
     >
-      <ScheduleSelector
-        currentSchedule={currentSchedule}
-        onScheduleChange={handleScheduleChange}
-        onAssemblyLetterChange={handleAssemblyLetterChange}
-      />
+      {showScheduleSelector && (
+        <ScheduleSelector
+          currentSchedule={currentSchedule}
+          onScheduleChange={handleScheduleChange}
+          onAssemblyLetterChange={handleAssemblyLetterChange}
+        />
+      )}
 
       <div className={`absolute inset-0 bg-gradient-to-r ${
         isLightTheme

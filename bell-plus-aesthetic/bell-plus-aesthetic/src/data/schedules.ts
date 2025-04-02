@@ -96,18 +96,11 @@ export const schedules: { [key: string]: Schedule } = {
       { name: "Free", startTime: "3:03", endTime: "23:59" }
     ]
   },
-  saturday: {
-    name: "saturday",
-    displayName: "Saturday",
+  holiday: {
+    name: "holiday",
+    displayName: "Holiday",
     periods: [
-      { name: "Weekend", startTime: "0:00", endTime: "23:59", duration: "(24h)" }
-    ]
-  },
-  sunday: {
-    name: "sunday",
-    displayName: "Sunday",
-    periods: [
-      { name: "Weekend", startTime: "0:00", endTime: "23:59", duration: "(24h)" }
+      { name: "No School", startTime: "0:00", endTime: "23:59", duration: "(24h)" }
     ]
   },
   minimumDay: {
@@ -157,8 +150,9 @@ export function getCurrentDaySchedule(): Schedule {
 
   switch (day) {
     case 0: // Sunday
-      console.log("Using Sunday schedule");
-      scheduleToUse = schedules.sunday;
+    case 6: // Saturday
+      console.log("Weekend - using Holiday schedule");
+      scheduleToUse = schedules.holiday;
       break;
     case 1: // Monday
       console.log("Using Monday schedule");
@@ -179,10 +173,6 @@ export function getCurrentDaySchedule(): Schedule {
     case 5: // Friday
       console.log("Using Friday schedule");
       scheduleToUse = schedules.friday;
-      break;
-    case 6: // Saturday
-      console.log("Using Saturday schedule");
-      scheduleToUse = schedules.saturday;
       break;
     default: // Fallback (should never happen)
       console.warn("Unknown day, defaulting to Monday schedule");
