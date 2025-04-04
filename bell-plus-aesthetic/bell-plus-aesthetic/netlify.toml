@@ -5,10 +5,14 @@
 [build.environment]
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
   NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
 
-# Enable Next.js support
+# Tell Netlify where to find the Next.js app
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    # Specify that the app is in the src directory
+    src_dir = "src"
 
 # Handle client-side routing for static Next.js app
 [[redirects]]
