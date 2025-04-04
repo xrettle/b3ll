@@ -15,8 +15,8 @@ export default MillionLint.next({
   // Optimize components in the app directory
   filter: {
     include: [
-      "**/src/components/*.{tsx,jsx}",
-      "**/src/app/**/*.{tsx,jsx}"
+      "**/app/*.{tsx,jsx}",
+      "**/components/*.{tsx,jsx}"
     ]
   }
 })(nextConfig);
