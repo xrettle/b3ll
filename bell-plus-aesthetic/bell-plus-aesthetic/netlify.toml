@@ -1,15 +1,19 @@
 [build]
-  base = "/"
-  command = "bun run build"
-  publish = "out"
+  command = "npm run build"
+  publish = ".next"
 
 [build.environment]
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  NETLIFY_NEXT_PLUGIN_SKIP = "false"
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
 
-# Handle client-side routing for static Next.js app
+# Use Netlify's Next.js plugin for deployment
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Fallback route handling for client-side navigation
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
