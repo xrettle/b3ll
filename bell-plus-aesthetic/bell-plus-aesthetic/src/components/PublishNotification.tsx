@@ -23,7 +23,7 @@ export function PublishNotification() {
           }}
         >
           <motion.a
-            href="https://edit.bell.plus"
+            href="https://eganschool.org"
             target="_blank"
             className="px-3 py-2 text-black text-sm font-medium flex-1"
             whileHover={{
@@ -31,7 +31,7 @@ export function PublishNotification() {
               transition: { duration: 0.2 }
             }}
           >
-            Publish your school's schedule
+            Egan Junior High School Website
           </motion.a>
 
           <motion.button

@@ -8,6 +8,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Explicitly set the app and pages directories
+  experimental: {
+    appDir: true,
+  },
 };
 
 export default MillionLint.next({

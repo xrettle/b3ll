@@ -12,7 +12,7 @@ const firaCode = Fira_Code({
 
 export const metadata: Metadata = {
   title: "b3ll",
-  description: "A bell timer for school schedules",
+  description: "A bell timer for the Ardis G. Egan Junior High School schedule",
   icons: {
     icon: '/favicon.svg',
   }

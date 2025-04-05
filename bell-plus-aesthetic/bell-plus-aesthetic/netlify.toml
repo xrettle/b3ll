@@ -1,4 +1,5 @@
 [build]
+  base = "/"
   command = "bun run build"
   publish = "out"
 
@@ -6,7 +7,6 @@
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
-  NODE_PATH = "src"
 
 # Handle client-side routing for static Next.js app
 [[redirects]]
