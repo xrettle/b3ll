@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@million/lint": "^1.0.14",
+    "@million/lint": "^0.0.39",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.5.0",
