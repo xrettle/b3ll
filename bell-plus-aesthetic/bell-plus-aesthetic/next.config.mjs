@@ -9,6 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Explicitly set the app directory
+  experimental: {
+    appDir: true,
+  },
 };
 
 export default MillionLint.next({
@@ -17,7 +21,8 @@ export default MillionLint.next({
   filter: {
     include: [
       "**/src/components/*.{tsx,jsx}",
-      "**/src/app/**/*.{tsx,jsx}"
+      "**/src/app/**/*.{tsx,jsx}",
+      "**/app/**/*.{tsx,jsx}"
     ]
   }
 })(nextConfig);
