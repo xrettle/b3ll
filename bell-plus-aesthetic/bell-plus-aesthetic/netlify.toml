@@ -1,6 +1,8 @@
 [build]
-  command = "bun run build"
+  # Direct build command in the current directory
+  command = "npm install && npm run build"
   publish = "out"
+  base = "."
 
 [build.environment]
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
