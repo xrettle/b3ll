@@ -7,10 +7,9 @@
   NETLIFY_NEXT_PLUGIN_SKIP = "false"
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
+  # Specify the app directory as an environment variable instead
+  NEXT_ROOT = "bell-plus-aesthetic/bell-plus-aesthetic"
 
 # Enable Next.js support
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    # Tell Netlify where to find the Next.js app
-    app_directory = "bell-plus-aesthetic/bell-plus-aesthetic"
