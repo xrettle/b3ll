@@ -1,7 +1,15 @@
-// This file redirects to the actual layout in src/app
-import RootLayout from '../src/app/layout';
+import type { Metadata } from "next";
+import { Inter, Fira_Code } from "next/font/google";
+import "../src/app/globals.css";
 
-export const metadata = {
+const inter = Inter({ subsets: ["latin"] });
+const firaCode = Fira_Code({ 
+  subsets: ["latin"],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-fira-code'
+});
+
+export const metadata: Metadata = {
   title: "b3ll",
   description: "A bell timer for school schedules",
   icons: {
@@ -9,4 +17,20 @@ export const metadata = {
   }
 };
 
-export default RootLayout;
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className={firaCode.variable}>
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <script async src="https://cdn.lordicon.com/lordicon.js"></script>
+      </head>
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning>
+        {children}
+      </body>
+    </html>
+  );
+}

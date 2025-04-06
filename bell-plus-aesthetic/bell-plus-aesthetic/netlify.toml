@@ -1,16 +1,15 @@
 [build]
-  # Direct build command in the current directory
+  # Build command for Next.js on Netlify
   command = "npm install && npm run build"
-  publish = "out"
+  publish = ".next"
   base = "."
 
 [build.environment]
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  # Allow Netlify to handle Next.js correctly
+  NETLIFY_NEXT_PLUGIN_SKIP = "false"
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
 
-# Handle client-side routing for static Next.js app
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Use the Netlify Next.js plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
