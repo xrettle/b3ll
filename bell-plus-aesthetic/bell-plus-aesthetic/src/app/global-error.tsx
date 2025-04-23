@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-// Import the standalone timer with no SSR to ensure it works independently
-const StandaloneBellTimer = dynamic(() => import('@/components/StandaloneBellTimer'), {
+// Import the BellTimer component with no SSR to ensure it works independently
+const BellTimer = dynamic(() => import('@/components/BellTimer').then(mod => ({ default: mod.BellTimer })), {
   ssr: false,
 });
 
@@ -35,7 +35,7 @@ export default function GlobalError({
                 </p>
                 
                 <div className="mb-8 p-4 bg-black/30 rounded-lg">
-                  <StandaloneBellTimer />
+                  <BellTimer />
                 </div>
                 
                 <button
