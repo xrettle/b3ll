@@ -7,9 +7,9 @@ declare module 'next' {
     description?: string;
     icons?: {
       icon?: string;
-      [key: string]: any;
+      [key: string]: string | string[] | number | boolean | null | undefined;
     };
-    [key: string]: any;
+    [key: string]: string | string[] | number | boolean | null | undefined | Record<string, unknown>;
   };
 }
 
