@@ -3,9 +3,9 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamically import the standalone timer to ensure it works independently
-const StandaloneBellTimer = dynamic(
-  () => import('./StandaloneBellTimer'),
+// Dynamically import the BellTimer component to ensure it works independently
+const BellTimer = dynamic(
+  () => import('./BellTimer').then(mod => ({ default: mod.BellTimer })),
   { ssr: false }
 );
 
@@ -75,11 +75,11 @@ class ErrorBoundary extends Component<Props, State> {
               </details>
             </div>
             
-            {/* The standalone timer component will continue to work even when the main app fails */}
+            {/* The BellTimer component will continue to work even when the main app fails */}
             <div className="mt-8">
               <h2 className="text-xl font-bold mb-4">Bell Timer (Still Working)</h2>
               <div className="bg-black/20 p-6 rounded-xl">
-                <StandaloneBellTimer />
+                <BellTimer />
               </div>
             </div>
           </div>

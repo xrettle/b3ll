@@ -18,6 +18,10 @@ const nextConfig = {
   
   // For better Netlify compatibility
   output: 'standalone',
+  
+  // Ensure proper error handling
+  distDir: '.next',
+  poweredByHeader: false,
 
   // Reduce function size with proper CSS optimization config
   experimental: {

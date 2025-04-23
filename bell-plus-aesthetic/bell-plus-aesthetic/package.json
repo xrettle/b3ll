@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
-    "build": "ANALYZE=false next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rimraf .next"

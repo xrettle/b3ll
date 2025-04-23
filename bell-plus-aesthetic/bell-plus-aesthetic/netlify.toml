@@ -1,8 +1,14 @@
 [build]
   # Enhanced build command with explicit installation of critters
-  command = "npm install critters --save && npm install && NODE_OPTIONS='--max-old-space-size=4096' next build"
+  command = "npm install critters --save && npm install && next build"
   publish = ".next"
   base = "."
+
+# Add redirects to ensure client-side routing works
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [build.environment]
   # Important environment variables for Next.js 15+
