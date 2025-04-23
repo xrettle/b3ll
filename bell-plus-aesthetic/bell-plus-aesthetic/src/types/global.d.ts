@@ -1,7 +1,7 @@
-/// <reference types="react" />
-/// <reference types="react-dom" />
-/// <reference types="next" />
-/// <reference types="next/font/google" />
+import React from 'react';
+import ReactDOM from 'react-dom';
+import type { NextPage } from 'next';
+import type { AppProps } from 'next/app';
 
 declare module "*.svg" {
   const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>;
@@ -19,7 +19,7 @@ declare module "*.jpg" {
 }
 
 declare module "*.json" {
-  const content: any;
+  const content: Record<string, unknown>;
   export default content;
 }
 

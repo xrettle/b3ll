@@ -409,7 +409,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
       observer.disconnect();
       window.removeEventListener('clockFormatChanged', handleClockFormatChange);
     };
-  }, []); // Empty dependency array as we're using conditional checks inside
+  }, [isLightTheme, use12HourFormat]); // Add dependencies to fix the missing dependencies warning
 
   useEffect(() => {
     if (!mounted) return;
