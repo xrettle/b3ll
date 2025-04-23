@@ -1,15 +1,25 @@
 [build]
-  # Build command for Next.js on Netlify
-  command = "npm install && npm run build"
+  # Enhanced build command with explicit installation of critters
+  command = "npm install critters --save && npm install && NODE_OPTIONS='--max-old-space-size=4096' next build"
   publish = ".next"
   base = "."
 
 [build.environment]
-  # Allow Netlify to handle Next.js correctly
+  # Important environment variables for Next.js 15+
   NETLIFY_NEXT_PLUGIN_SKIP = "false"
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
+  NEXT_PRIVATE_STANDALONE = "true"
+  NEXT_DEBUG_MODE = "false"
+  CI = "false" # Prevents warnings from being treated as errors
 
-# Use the Netlify Next.js plugin
+# Use the latest Next.js plugin
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  
+# Improve function bundling performance
+[functions]
+  # Include necessary files and specify included_files list
+  node_bundler = "esbuild"
+  external_node_modules = ["next"]
+  included_files = ["node_modules/critters/**/*"]

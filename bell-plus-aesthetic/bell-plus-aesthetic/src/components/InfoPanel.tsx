@@ -84,9 +84,9 @@ export function InfoPanel({ isOpen, onClose }: InfoPanelProps) {
             </div>
 
             {/* Content */}
-            <div className="p-5 max-h-[60vh] overflow-y-hidden font-mono text-white/80" 
+            <div className="p-5 max-h-[60vh] overflow-y-auto font-mono text-white/80 text-center" 
                  style={{ fontFamily: '"Fira Code", monospace' }}>
-              <div className="space-y-6">
+              <div className="space-y-6 mx-auto max-w-md">
                 <div className="space-y-3">
                   <h3 className="text-md font-semibold text-blue-400">Timer</h3>
                   <p className="text-sm text-white/70">

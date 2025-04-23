@@ -44,7 +44,20 @@ const Schedule = dynamic(() => import('@/components/Schedule'), {
 // Dynamically import SettingsPanel with lazy loading - optimize with priority
 const SettingsPanel = dynamic(() => import('@/components/SettingsPanel').then(mod => ({ default: mod.SettingsPanel })), {
   ssr: false,
-  loading: () => <div className="fixed top-0 right-0 bottom-0 w-80 bg-[#1a1e20]/50 backdrop-blur-sm z-50 shadow-xl"></div>
+  loading: () => (
+    <div className="fixed top-0 right-0 bottom-0 w-80 bg-[#1a1e20]/80 backdrop-blur-sm z-50 shadow-xl animate-pulse">
+      <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <div className="h-6 w-32 bg-white/10 rounded"></div>
+        <div className="h-8 w-8 bg-white/10 rounded-full"></div>
+      </div>
+      <div className="p-6 space-y-4">
+        <div className="h-4 bg-white/10 rounded w-3/4"></div>
+        <div className="h-10 bg-white/10 rounded"></div>
+        <div className="h-4 bg-white/10 rounded w-1/2"></div>
+        <div className="h-10 bg-white/10 rounded"></div>
+      </div>
+    </div>
+  )
 })
 
 // Dynamically import InfoPanel with lazy loading - optimize with lower priority

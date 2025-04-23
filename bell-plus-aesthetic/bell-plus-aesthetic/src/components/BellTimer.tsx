@@ -373,19 +373,26 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
   }, []);
 
   useEffect(() => {
+    // Define the check functions outside to avoid recreating them on each render
     const checkTheme = () => {
       const isLight = document.documentElement.classList.contains('light-theme');
-      setIsLightTheme(isLight);
+      if (isLight !== isLightTheme) {
+        setIsLightTheme(isLight);
+      }
     };
 
     const checkClockFormat = () => {
       const use12Hour = localStorage.getItem('bell-timer-12hour') === 'true';
-      setUse12HourFormat(use12Hour);
+      if (use12Hour !== use12HourFormat) {
+        setUse12HourFormat(use12Hour);
+      }
     };
 
+    // Initial checks
     checkTheme();
     checkClockFormat();
 
+    // Set up observer for theme changes
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -402,7 +409,7 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
       observer.disconnect();
       window.removeEventListener('clockFormatChanged', handleClockFormatChange);
     };
-  }, []);
+  }, []); // Empty dependency array as we're using conditional checks inside
 
   useEffect(() => {
     if (!mounted) return;
@@ -622,7 +629,15 @@ export const BellTimer = memo(function BellTimer({ onScheduleUpdate }: BellTimer
   // This effect runs when the current time changes to update the period
   useEffect(() => {
     if (mounted) {
-      findCurrentPeriod(currentTime);
+      // Use a ref to track the last update time to prevent excessive updates
+      const now = new Date();
+      const lastUpdateTime = lastUpdateTimeRef.current;
+      const timeDiff = now.getTime() - lastUpdateTime;
+      
+      // Only update if at least 500ms have passed since the last update
+      if (timeDiff > 500) {
+        findCurrentPeriod(currentTime);
+      }
     }
   }, [currentTime, findCurrentPeriod, mounted]);
 

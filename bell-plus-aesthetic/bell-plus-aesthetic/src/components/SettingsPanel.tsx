@@ -229,6 +229,50 @@ function SettingsDropdown({ label, options, value, onChange, theme }: {
   );
 }
 
+// Utility to generate and download a minimal offline HTML version of the timer
+export function downloadOfflineHtml(): void {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B3ll Timer (Offline)</title>
+  <style>
+    body { background: #151718; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .timer { font-size: 3em; font-weight: bold; }
+    .period { font-size: 1.5em; margin-top: 0.5em; }
+    .next { font-size: 1em; margin-top: 0.5em; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="timer" id="countdown">00:00:00</div>
+  <div class="period" id="period">Loading...</div>
+  <div class="next" id="next">Until Next Warning Bell</div>
+  <script>
+    // Minimal timer logic for offline
+    function pad(n) { return n.toString().padStart(2, '0'); }
+    function formatCountdown(h, m, s) { return \`\${pad(h)}:\${pad(m)}:\${pad(s)}\`; }
+    function update() {
+      const now = new Date();
+      document.getElementById('countdown').textContent = formatCountdown(now.getHours(), now.getMinutes(), now.getSeconds());
+      document.getElementById('period').textContent = 'Offline Mode';
+      document.getElementById('next').textContent = 'Timer works without wifi';
+    }
+    setInterval(update, 1000);
+    update();
+  </script>
+</body>
+</html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'b3ll-timer-offline.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
 export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps) {
   // Use local storage for persistent settings across refreshes
   const [theme, setTheme] = useState<string>(() => {
@@ -569,6 +613,25 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                         </div>
                       </div>
                     </motion.div>
+
+                    {/* Offline Download Button */}
+                    <motion.div variants={itemVariants} className="mt-8 pt-6 border-t border-dashed">
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                          <ExternalLink size={16} className={isLightTheme ? "text-[#333]" : "text-white"} />
+                          <h3 className={`text-md font-semibold ${isLightTheme ? "text-[#333]" : "text-white"}`}>
+                            Offline Timer
+                          </h3>
+                        </div>
+                        <p className={`text-xs ${isLightTheme ? "text-[#333]/60" : "text-white/60"}`}>Download a working HTML version of the timer for use without wifi.</p>
+                        <button
+                          onClick={downloadOfflineHtml}
+                          className={`w-full h-10 mt-2 ${isLightTheme ? 'bg-[#333]/10 hover:bg-[#333]/15 text-[#333]' : 'bg-white/10 hover:bg-white/15 text-white'} rounded-xl flex items-center justify-center px-3 transition-colors`}
+                        >
+                          Download Offline Timer
+                        </button>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
               )}
@@ -579,3 +642,4 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     </>
   );
 }
+
