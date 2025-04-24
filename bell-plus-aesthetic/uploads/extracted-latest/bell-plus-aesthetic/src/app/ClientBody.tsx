@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect, Suspense } from "react";
-import dynamic from 'next/dynamic';
-
-// Dynamically import ErrorBoundary with no SSR to avoid hydration issues
-const ErrorBoundary = dynamic(
-  () => import('../components/ErrorBoundary'),
-  { ssr: false }
-);
+import { useState, useEffect } from "react";
 
 // Fallback loading component
 const LoadingFallback = ({ isLightTheme }: { isLightTheme: boolean }) => (
@@ -93,12 +86,10 @@ export default function ClientBody({ children }: { children: React.ReactNode }) 
     return <LoadingFallback isLightTheme={isLightTheme} />;
   }
 
-  // Wrap the entire application in ErrorBoundary and Suspense for better error handling
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<LoadingFallback isLightTheme={isLightTheme} />}>
-        {children}
-      </Suspense>
-    </ErrorBoundary>
+  // Return the children directly with fallback for loading state
+  return mounted ? (
+    <>{children}</>
+  ) : (
+    <LoadingFallback isLightTheme={isLightTheme} />
   );
 }
