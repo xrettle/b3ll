@@ -1,4 +1,4 @@
-name: Deploy to Netlify and Windsurf
+name: Deploy to Windsurf
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -30,22 +30,18 @@ jobs:
           cd bell-plus-aesthetic/bell-plus-aesthetic
           npm run build
 
-      # Deploy to Netlify using their official action
-      - name: Deploy to Netlify
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --dir=bell-plus-aesthetic/bell-plus-aesthetic/.next --prod
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-      # Deploy to Windsurf using their CLI
-      - name: Install Windsurf CLI
-        run: npm install -g @windsurf/cli
-
+      # Direct deployment to Windsurf using curl
       - name: Deploy to Windsurf
         run: |
           cd bell-plus-aesthetic/bell-plus-aesthetic
-          windsurf deploy --token ${{ secrets.WINDSURF_TOKEN }} --project-id d8180aef-d9b8-41cd-b4d0-cfbfb7577f1d
+          # Create a tar of the build directory
+          tar -czf build.tar.gz .next
+          
+          # Upload to Windsurf using their API
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.WINDSURF_TOKEN }}" \
+            -F "file=@build.tar.gz" \
+            -F "project_id=d8180aef-d9b8-41cd-b4d0-cfbfb7577f1d" \
+            https://api.windsurf.build/v1/deployments
         env:
           WINDSURF_TOKEN: ${{ secrets.WINDSURF_TOKEN }}
