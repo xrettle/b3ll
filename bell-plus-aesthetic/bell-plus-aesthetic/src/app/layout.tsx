@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
 import ClientBody from "./ClientBody";
+import { ThemeProvider } from '@/lib/ThemeContext';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 const inter = Inter({ subsets: ["latin"] });
 const firaCode = Fira_Code({ 
@@ -51,7 +53,12 @@ export default function RootLayout({
         <noscript>
           <div style={{background:'#151718',color:'#fff',padding:'1em',textAlign:'center'}}>Enable JavaScript for full offline support.</div>
         </noscript>
-        <ClientBody>{children}</ClientBody>
+        <ThemeProvider>
+          <div className="fixed top-4 right-4 z-50">
+            <ThemeSwitcher />
+          </div>
+          <ClientBody>{children}</ClientBody>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,6 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --primary: #1a1a1a;
+    --secondary: #2d2d2d;
+    --background: #000000;
+    --text: #ffffff;
+    --accent: #3b82f6;
+    --muted: #4b5563;
+    --border: #374151;
+  }
+
+  body {
+    @apply bg-background text-text;
+    background-color: var(--background);
+    color: var(--text);
+  }
+
+  /* Theme transition */
+  * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+}
+
+@layer components {
+  .theme-primary {
+    background-color: var(--primary);
+  }
+
+  .theme-secondary {
+    background-color: var(--secondary);
+  }
+
+  .theme-accent {
+    background-color: var(--accent);
+  }
+
+  .theme-text {
+    color: var(--text);
+  }
+
+  .theme-border {
+    border-color: var(--border);
+  }
+
+  .theme-muted {
+    color: var(--muted);
+  }
+}
+
+/* Loading spinner theme */
+.loading-spinner {
+  border-color: var(--muted);
+  border-top-color: var(--accent);
+}
+
 /* Base transition for all elements that should animate during theme changes */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;

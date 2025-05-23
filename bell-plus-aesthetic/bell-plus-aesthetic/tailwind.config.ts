@@ -1,8 +1,7 @@
 import type { Config } from "tailwindcss";
 
-export default {
-    darkMode: ["class"],
-    content: [
+const config: Config = {
+  content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,87 +9,61 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))'
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))'
-        },
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))'
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))'
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))'
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))'
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))'
-        },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        chart: {
-          '1': 'hsl(var(--chart-1))',
-          '2': 'hsl(var(--chart-2))',
-          '3': 'hsl(var(--chart-3))',
-          '4': 'hsl(var(--chart-4))',
-          '5': 'hsl(var(--chart-5))'
-        }
+        primary: "var(--primary)",
+        secondary: "var(--secondary)",
+        background: "var(--background)",
+        text: "var(--text)",
+        accent: "var(--accent)",
+        muted: "var(--muted)",
+        border: "var(--border)",
       },
       animation: {
-        'bounce': 'bounce 1s infinite',
-        'bounce200': 'bounce 1s infinite 0.2s',
-        'bounce300': 'bounce 1s infinite 0.4s',
+        "fade-in": "fade-in 0.3s ease-in-out",
+        "fade-out": "fade-out 0.3s ease-in-out",
+        "zoom-in": "zoom-in 0.3s ease-in-out",
+        "zoom-out": "zoom-out 0.3s ease-in-out",
+        "slide-in-from-top": "slide-in-from-top 0.3s ease-in-out",
+        "slide-in-from-bottom": "slide-in-from-bottom 0.3s ease-in-out",
+        "slide-in-from-left": "slide-in-from-left 0.3s ease-in-out",
+        "slide-in-from-right": "slide-in-from-right 0.3s ease-in-out",
       },
       keyframes: {
-        bounce: {
-          '0%, 100%': {
-            transform: 'translateY(0)',
-            animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)',
-          },
-          '50%': {
-            transform: 'translateY(-25%)',
-            animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
-          },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "fade-out": {
+          "0%": { opacity: "1" },
+          "100%": { opacity: "0" },
+        },
+        "zoom-in": {
+          "0%": { transform: "scale(0.95)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "zoom-out": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "100%": { transform: "scale(0.95)", opacity: "0" },
+        },
+        "slide-in-from-top": {
+          "0%": { transform: "translateY(-10px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        "slide-in-from-bottom": {
+          "0%": { transform: "translateY(10px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        "slide-in-from-left": {
+          "0%": { transform: "translateX(-10px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "slide-in-from-right": {
+          "0%": { transform: "translateX(10px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
       },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
-      },
-      container: {
-      center: true,
-      padding: {
-        DEFAULT: '1rem',
-        sm: '2rem',
-        lg: '4rem',
-        xl: '5rem',
-        '2xl': '6rem',
-      },
-      screens: {
-        sm: '640px',
-        md: '768px',
-        lg: '1024px',
-        xl: '1280px',
-        '2xl': '1536px',
-      },
-      },
-    }
+    },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+  plugins: [],
+};
+
+export default config;
