@@ -17,12 +17,6 @@ const config: Config = {
         muted: "var(--muted)",
         border: "var(--border)",
       },
-      backgroundColor: {
-        background: "var(--background)",
-      },
-      textColor: {
-        text: "var(--text)",
-      },
       animation: {
         "fade-in": "fade-in 0.3s ease-in-out",
         "fade-out": "fade-out 0.3s ease-in-out",

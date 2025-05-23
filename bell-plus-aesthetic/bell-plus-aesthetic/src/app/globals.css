@@ -4,19 +4,47 @@
 
 @layer base {
   :root {
-    --primary: #1a1a1a;
-    --secondary: #2d2d2d;
+    --background: #ffffff;
+    --text: #000000;
+    --primary: #0070f3;
+    --secondary: #6b7280;
+    --accent: #f59e0b;
+    --muted: #f3f4f6;
+    --border: #e5e7eb;
+  }
+
+  [data-theme="dark"] {
     --background: #000000;
     --text: #ffffff;
-    --accent: #3b82f6;
-    --muted: #4b5563;
+    --primary: #3b82f6;
+    --secondary: #9ca3af;
+    --accent: #fbbf24;
+    --muted: #1f2937;
     --border: #374151;
+  }
+
+  [data-theme="sepia"] {
+    --background: #f4ecd8;
+    --text: #5b4636;
+    --primary: #8b4513;
+    --secondary: #a0522d;
+    --accent: #d2691e;
+    --muted: #e8d9c3;
+    --border: #d2b48c;
+  }
+
+  [data-theme="high-contrast"] {
+    --background: #000000;
+    --text: #ffffff;
+    --primary: #ffff00;
+    --secondary: #00ffff;
+    --accent: #ff00ff;
+    --muted: #333333;
+    --border: #ffffff;
   }
 
   body {
     @apply bg-background text-text;
-    background-color: var(--background);
-    color: var(--text);
   }
 
   /* Theme transition */
