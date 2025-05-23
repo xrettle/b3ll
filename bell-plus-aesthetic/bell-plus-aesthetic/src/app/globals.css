@@ -44,7 +44,8 @@
   }
 
   body {
-    @apply bg-background text-text;
+    background-color: var(--background);
+    color: var(--text);
   }
 
   /* Theme transition */

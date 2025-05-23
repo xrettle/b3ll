@@ -8,11 +8,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      backgroundColor: {
+        background: "var(--background)",
+      },
+      textColor: {
+        text: "var(--text)",
+      },
       colors: {
         primary: "var(--primary)",
         secondary: "var(--secondary)",
-        background: "var(--background)",
-        text: "var(--text)",
         accent: "var(--accent)",
         muted: "var(--muted)",
         border: "var(--border)",
