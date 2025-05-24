@@ -3,11 +3,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Globe, Keyboard as KeyboardIcon, Palette, ExternalLink } from 'lucide-react';
 import { ReactNode, useState, useEffect, useRef, KeyboardEvent, useCallback } from 'react';
+import { useTheme } from '@/lib/ThemeContext';
+import { Schedule as ScheduleType, schedules } from '@/data/schedules';
+import { Theme } from '@/lib/theme';
 
 interface SettingsPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  children?: ReactNode;
+  onScheduleChange: (schedule: ScheduleType) => void;
+  activeSchedule: ScheduleType | null;
 }
 
 // Optimized animation variants with simpler transitions
@@ -273,373 +277,101 @@ export function downloadOfflineHtml(): void {
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 }
 
-export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps) {
-  // Use local storage for persistent settings across refreshes
-  const [theme, setTheme] = useState<string>(() => {
-    // Try to get saved theme from localStorage, default to 'dark'
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('bell-timer-theme') || 'dark';
-    }
-    return 'dark';
-  });
+export function SettingsPanel({ isOpen, onClose, onScheduleChange, activeSchedule }: SettingsPanelProps) {
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-  const [fontSize, setFontSize] = useState<string>(() => {
-    // Try to get saved font size from localStorage, default to 'medium'
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('bell-timer-font-size') || 'medium';
-    }
-    return 'medium';
-  });
-
-  // Redirect key settings
-  const [redirectKey, setRedirectKey] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('bell-timer-redirect-key') || 'F8';
-    }
-    return 'F8';
-  });
-  const [redirectUrl, setRedirectUrl] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('bell-timer-redirect-url') || 'https://google.com';
-    }
-    return 'https://google.com';
-  });
-  const [listeningForKey, setListeningForKey] = useState(false);
-
-  // Check if theme is light
-  const isLightTheme = theme.includes('light');
-
-  // Clock format state
-  const [use12HourClock, setUse12HourClock] = useState(false);
-
-  // Apply saved settings on initial mount - only runs once intentionally
   useEffect(() => {
-    // Check for saved settings in localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        // Get clock format preference
-        const savedClockFormat = localStorage.getItem('bell-timer-12hour-clock') === 'true';
-        setUse12HourClock(savedClockFormat);
-      } catch (error) {
-        console.error('Error loading settings from localStorage:', error);
-      }
-    }
+    setMounted(true);
   }, []);
 
-  // Add event listener for the redirect key
-  useEffect(() => {
-    if (!redirectKey || !isOpen) return;
+  if (!mounted) return null;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (listeningForKey) {
-        // If we're listening for a key for the redirect shortcut
-        e.preventDefault();
-        setRedirectKey(e.key);
-        setListeningForKey(false);
-        
-        // Save to localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('bell-timer-redirect-key', e.key);
-        }
-        return;
-      }
-      
-      if (e.key === redirectKey) {
-        // Redirect to the specified URL
-        window.location.href = redirectUrl;
-      }
-    };
-
-    // Add global event listener with proper typing
-    window.addEventListener('keydown', handleKeyDown as unknown as EventListener);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown as unknown as EventListener);
-    };
-  }, [redirectKey, redirectUrl, isOpen, listeningForKey]);
-
-  const themeOptions = [
+  const themeOptions: { value: Theme; label: string }[] = [
     { value: 'dark', label: 'Dark' },
-    { value: 'light', label: 'Light' }
+    { value: 'light', label: 'Light' },
+    { value: 'slate-blue', label: 'Slate Blue' },
+    { value: 'rose-red', label: 'Rose Red' },
+    { value: 'sunset-orange', label: 'Sunset Orange' },
+    { value: 'forest-green', label: 'Forest Green' },
+    { value: 'violet-purple', label: 'Violet Purple' },
   ];
-
-  const fontSizeOptions = [
-    { value: 'small', label: 'Small' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'large', label: 'Large' }
-  ];
-
-  // Add handler for clock format change
-  const handleClockFormatChange = (use12Hour: boolean) => {
-    setUse12HourClock(use12Hour);
-
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bell-timer-12hour-clock', use12Hour.toString());
-
-      // Dispatch event to notify BellTimer that the clock format has changed
-      window.dispatchEvent(new Event('clockFormatChanged'));
-    }
-  };
-
-  // Apply theme changes
-  const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
-
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bell-timer-theme', newTheme);
-    }
-  };
-
-  // Apply font size changes
-  const handleFontSizeChange = (newSize: string) => {
-    setFontSize(newSize);
-
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bell-timer-font-size', newSize);
-    }
-  };
 
   return (
-    <>
-      {/* Backdrop with AnimatePresence for clean exit */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black/70 z-40"
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={backdropVariants}
-            onClick={onClose}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Settings Panel with optimized animations */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className={`fixed top-0 right-0 bottom-0 w-80 backdrop-blur-sm z-50 shadow-xl will-change-transform flex flex-col ${
-                isLightTheme ? 'bg-[#f0f2f5]/90' : 'bg-[#1a1e20]/90'
-              }`}
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={panelVariants}
-          >
-            {/* Header - Fixed at top */}
-            <div className={`flex justify-between items-center p-4 border-b ${
-              isLightTheme ? 'border-[#333]/10' : 'border-white/10'
-            }`}>
-              <h2 className={`text-lg font-medium ${
-                isLightTheme ? 'text-[#333]/90' : 'text-white/90'
-              }`} style={{ fontFamily: '"Fira Code", monospace' }}>Settings</h2>
-              <motion.button
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="fixed top-0 right-0 h-full w-80 bg-background/80 backdrop-blur-sm border-l border-border z-50"
+        >
+          <div className="p-6 space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-medium">Settings</h2>
+              <button
                 onClick={onClose}
-                className={`p-2 rounded-full transition-colors ${
-                  isLightTheme
-                    ? 'text-[#333]/60 hover:bg-[#333]/5'
-                    : 'text-white/60 hover:bg-white/5'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="p-2 hover:bg-muted rounded-full transition-colors"
               >
-                <X size={18} />
-              </motion.button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
 
-            {/* Content - Scrollable */}
-            <motion.div
-              className={`flex-1 p-4 font-mono ${
-                isLightTheme ? 'text-[#333]/80' : 'text-white/80'
-              } overflow-y-auto`}
-              style={{ fontFamily: '"Fira Code", monospace' }}
-              variants={contentVariants}
-            >
-              {children || (
-                <div className="space-y-6">
-                  <motion.p
-                    className={isLightTheme ? 'text-sm text-[#333]/60' : 'text-sm text-white/60'}
-                    variants={itemVariants}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground">Theme</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {themeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setTheme(option.value)}
+                    className={`p-3 rounded-lg border ${
+                      theme === option.value
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    } transition-colors`}
                   >
-                    Configure your bell timer settings
-                  </motion.p>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  {/* Settings Content */}
-                  <div className="space-y-4">
-                    {/* Theme Dropdown */}
-                    <motion.div variants={itemVariants}>
-                      <SettingsDropdown
-                        label="App Theme"
-                        options={themeOptions}
-                        value={theme}
-                        onChange={handleThemeChange}
-                        theme={theme}
-                      />
-                    </motion.div>
-
-                    {/* Clock Format Toggle */}
-                    <motion.div variants={itemVariants} className="mt-4">
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-center">
-                          <label className={`text-xs uppercase tracking-wider ${
-                            isLightTheme ? 'text-[#333]/50' : 'text-white/50'
-                          }`}>
-                            Clock Format
-                          </label>
-                        </div>
-
-                        <div className={`w-full h-10 ${
-                          isLightTheme
-                            ? 'bg-[#333]/10 text-[#333]'
-                            : 'bg-white/10 text-white'
-                        } rounded-xl flex items-center justify-between px-3`}>
-                          <div className="flex items-center space-x-2">
-                            <button
-                              className={`px-3 py-1 rounded ${
-                                !use12HourClock
-                                  ? isLightTheme
-                                    ? 'bg-[#333]/20 text-[#333]'
-                                    : 'bg-white/20 text-white'
-                                  : isLightTheme
-                                    ? 'text-[#333]/70 hover:text-[#333]/90 hover:bg-[#333]/10'
-                                    : 'text-white/70 hover:text-white/90 hover:bg-white/10'
-                              } transition-colors text-sm`}
-                              onClick={() => handleClockFormatChange(false)}
-                            >
-                              24h
-                            </button>
-                            <button
-                              className={`px-3 py-1 rounded ${
-                                use12HourClock
-                                  ? isLightTheme
-                                    ? 'bg-[#333]/20 text-[#333]'
-                                    : 'bg-white/20 text-white'
-                                  : isLightTheme
-                                    ? 'text-[#333]/70 hover:text-[#333]/90 hover:bg-[#333]/10'
-                                    : 'text-white/70 hover:text-white/90 hover:bg-white/10'
-                              } transition-colors text-sm`}
-                              onClick={() => handleClockFormatChange(true)}
-                            >
-                              12h
-                            </button>
-                          </div>
-                          <span className={`text-xs ${isLightTheme ? 'text-[#333]/60' : 'text-white/60'}`}>
-                            {use12HourClock ? '1:30 PM' : '13:30'}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Font Size Dropdown */}
-                    <motion.div variants={itemVariants} className="mt-4">
-                      <SettingsDropdown
-                        label="Font Size"
-                        options={fontSizeOptions}
-                        value={fontSize}
-                        onChange={handleFontSizeChange}
-                        theme={theme}
-                      />
-                    </motion.div>
-
-                    {/* Redirect Key Settings */}
-                    <motion.div 
-                      variants={itemVariants} 
-                      className="mt-8 pt-6 border-t border-dashed"
-                    >
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <ExternalLink size={16} className={isLightTheme ? "text-[#333]" : "text-white"} />
-                          <h3 className={`text-md font-semibold ${isLightTheme ? "text-[#333]" : "text-white"}`}>
-                            Redirect Key
-                          </h3>
-                        </div>
-                        
-                        <p className={`text-xs ${isLightTheme ? "text-[#333]/60" : "text-white/60"}`}>
-                          Configure a key to quickly redirect to any website.
-                        </p>
-
-                        {/* Redirect Key Setting */}
-                        <div className="space-y-2 mt-4">
-                          <label className={`text-xs uppercase tracking-wider ${
-                            isLightTheme ? 'text-[#333]/50' : 'text-white/50'
-                          }`}>
-                            Shortcut Key
-                          </label>
-                          <button
-                            onClick={() => setListeningForKey(true)}
-                            className={`w-full h-10 ${
-                              isLightTheme
-                                ? 'bg-[#333]/10 hover:bg-[#333]/15 text-[#333]'
-                                : 'bg-white/10 hover:bg-white/15 text-white'
-                            } rounded-xl flex items-center justify-between px-3 transition-colors`}
-                          >
-                            <span>{listeningForKey ? "Press any key..." : redirectKey}</span>
-                            <KeyboardIcon size={16} className={isLightTheme ? "text-[#333]/60" : "text-white/60"} />
-                          </button>
-                        </div>
-
-                        {/* Redirect URL Setting */}
-                        <div className="space-y-2 mt-4">
-                          <label className={`text-xs uppercase tracking-wider ${
-                            isLightTheme ? 'text-[#333]/50' : 'text-white/50'
-                          }`}>
-                            Redirect URL
-                          </label>
-                          <div className={`w-full h-10 ${
-                            isLightTheme
-                              ? 'bg-[#333]/10 text-[#333]'
-                              : 'bg-white/10 text-white'
-                          } rounded-xl flex items-center px-3`}>
-                            <input
-                              type="url"
-                              value={redirectUrl}
-                              onChange={(e) => {
-                                setRedirectUrl(e.target.value);
-                                if (typeof window !== 'undefined') {
-                                  localStorage.setItem('bell-timer-redirect-url', e.target.value);
-                                }
-                              }}
-                              placeholder="https://example.com"
-                              className={`w-full bg-transparent outline-none text-sm ${
-                                isLightTheme ? 'placeholder-[#333]/40' : 'placeholder-white/40'
-                              }`}
-                            />
-                            <Globe size={16} className={isLightTheme ? "text-[#333]/60" : "text-white/60"} />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Offline Download Button */}
-                    <motion.div variants={itemVariants} className="mt-8 pt-6 border-t border-dashed">
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <ExternalLink size={16} className={isLightTheme ? "text-[#333]" : "text-white"} />
-                          <h3 className={`text-md font-semibold ${isLightTheme ? "text-[#333]" : "text-white"}`}>
-                            Offline Timer
-                          </h3>
-                        </div>
-                        <p className={`text-xs ${isLightTheme ? "text-[#333]/60" : "text-white/60"}`}>Download a working HTML version of the timer for use without wifi.</p>
-                        <button
-                          onClick={downloadOfflineHtml}
-                          className={`w-full h-10 mt-2 ${isLightTheme ? 'bg-[#333]/10 hover:bg-[#333]/15 text-[#333]' : 'bg-white/10 hover:bg-white/15 text-white'} rounded-xl flex items-center justify-center px-3 transition-colors`}
-                        >
-                          Download Offline Timer
-                        </button>
-                      </div>
-                    </motion.div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground">Schedule</h3>
+              <div className="space-y-2">
+                {Object.values(schedules).map((schedule) => (
+                  <button
+                    key={schedule.name}
+                    onClick={() => onScheduleChange(schedule)}
+                    className={`w-full p-3 rounded-lg border text-left ${
+                      activeSchedule?.name === schedule.name
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    } transition-colors`}
+                  >
+                    {schedule.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

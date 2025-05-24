@@ -6,6 +6,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Schedule as ScheduleType, getCurrentDaySchedule, schedules } from '@/data/schedules'
 import { InfoButton } from '@/components/InfoPanel'
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
 
 // Dynamically import BellTimer component with loading state
 const BellTimer = dynamic(() => import('@/components/BellTimer').then(mod => ({ default: mod.BellTimer })), {
@@ -228,36 +230,119 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <Header onSettingsClick={toggleSettings} />
+    <div className="flex min-h-screen flex-col">
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="container-custom">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="heading-1 mb-6">
+              Transform Your Business with{" "}
+              <span className="text-gradient">AI Solutions</span>
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              Leverage cutting-edge artificial intelligence to streamline operations,
+              enhance decision-making, and drive growth.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button className="btn-primary">Get Started</Button>
+              <Button className="btn-secondary">Learn More</Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Settings Panel */}
-      {showSettings && <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />}
-      
-      {/* Info Panel - only load when needed */}
-      {showInfoPanel && <InfoPanel isOpen={showInfoPanel} onClose={() => setShowInfoPanel(false)} />}
+      {/* Features Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="container-custom">
+          <h2 className="heading-2 text-center mb-12">Why Choose B3LL</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="card">
+                <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-4">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <main className="relative">
-        {/* Timer Section */}
-        <section className="min-h-screen flex flex-col items-center justify-center">
-          <BellTimer onScheduleUpdate={handleScheduleUpdate} />
-        </section>
-
-        {/* Schedule Section */}
-        <section className="min-h-screen flex items-center justify-center px-4 py-20">
-          {showSchedule && activeSchedule && (
-            <Schedule
-              activeSchedule={activeSchedule}
-              assemblyLetter={assemblyLetter}
-            />
-          )}
-          
-          {/* Info Button - only show when schedule is visible */}
-          {showSchedule && (
-            <InfoButton onClick={() => setShowInfoPanel(true)} />
-          )}
-        </section>
-      </main>
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="container-custom">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="heading-2 mb-6">Ready to Get Started?</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              Join thousands of businesses already using B3LL to transform their operations.
+            </p>
+            <Button className="btn-primary">Start Free Trial</Button>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
+
+const features = [
+  {
+    title: "Smart Automation",
+    description: "Automate repetitive tasks and workflows with intelligent AI solutions.",
+    icon: (
+      <svg
+        className="w-6 h-6 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 10V3L4 14h7v7l9-11h-7z"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Data Analytics",
+    description: "Gain valuable insights from your data with advanced analytics tools.",
+    icon: (
+      <svg
+        className="w-6 h-6 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "24/7 Support",
+    description: "Get round-the-clock support from our dedicated team of experts.",
+    icon: (
+      <svg
+        className="w-6 h-6 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
+        />
+      </svg>
+    ),
+  },
+]
