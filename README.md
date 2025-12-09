@@ -1,5 +1,4 @@
-# Aesthetic Bell Timer
-
+# b3ll
 A premium, visually stunning bell timer application built for Egan Junior High School. This application features real-time countdowns, dynamic progress bars, and a beautiful UI that adapts to your preferences.
 
 ![Bell Timer Screenshot](https://via.placeholder.com/800x450?text=Aesthetic+Bell+Timer+Preview)
