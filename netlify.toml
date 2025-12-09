@@ -1,0 +1,17 @@
+[build]
+  command = "bun run build"
+  publish = "out"
+
+[build.environment]
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  NODE_VERSION = "20"
+
+# Enable Next.js support
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Handle client-side routing for static Next.js app
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
