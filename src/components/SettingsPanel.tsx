@@ -492,6 +492,13 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     return 'woodGrain';
   });
 
+  const [fluidAnimEnabled, setFluidAnimEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-effect-fluid-anim') === 'true';
+    }
+    return false;
+  });
+
   const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
 
   // The Konami code sequence
@@ -774,6 +781,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     }
   }, []);
 
+  const handleFluidAnimToggle = useCallback((enabled: boolean) => {
+    setFluidAnimEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-effect-fluid-anim', enabled.toString());
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
   // Ouroborus preset options
   const ouroborusPresetOptions = [
     { value: 'woodGrain', label: 'Wood Grain' },
@@ -959,6 +974,27 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                             />
                           </motion.div>
                         )}
+
+                        {/* Fluid Animation Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            Fluid Animation
+                          </span>
+                          <button
+                            onClick={() => handleFluidAnimToggle(!fluidAnimEnabled)}
+                            className={`w-10 h-6 rounded-full transition-colors relative ${fluidAnimEnabled
+                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
+                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
+                              }`}
+                          >
+                            <span
+                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${fluidAnimEnabled
+                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
+                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
+                                }`}
+                            />
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import 'lenis/dist/lenis.css';
+import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,8 +24,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={inter.className}>
-        {children}
+        <SmoothScrollProvider>
+          {children}
+        </SmoothScrollProvider>
       </body>
     </html>
   );
 }
+

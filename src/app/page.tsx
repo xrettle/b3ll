@@ -27,6 +27,10 @@ const FlickeringGrid = dynamic(() => import('@/components/ui/flickering-grid').t
   ssr: false,
 })
 
+const FluidAnimation = dynamic(() => import('@/components/ui/fluid-animation').then(mod => mod.default), {
+  ssr: false,
+})
+
 export default function Home() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -36,6 +40,7 @@ export default function Home() {
   // Visual effects state
   const [gradientBgEnabled, setGradientBgEnabled] = useState(false);
   const [flickeringGridEnabled, setFlickeringGridEnabled] = useState(false);
+  const [fluidAnimEnabled, setFluidAnimEnabled] = useState(false);
 
   // Initialize component and set default schedule
   useEffect(() => {
@@ -45,6 +50,7 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       setGradientBgEnabled(localStorage.getItem('bell-timer-effect-gradient-bg') === 'true');
       setFlickeringGridEnabled(localStorage.getItem('bell-timer-effect-flickering-grid') === 'true');
+      setFluidAnimEnabled(localStorage.getItem('bell-timer-effect-fluid-anim') === 'true');
     }
 
     // Get saved schedule from localStorage if available
@@ -104,6 +110,7 @@ export default function Home() {
       if (typeof window !== 'undefined') {
         setGradientBgEnabled(localStorage.getItem('bell-timer-effect-gradient-bg') === 'true');
         setFlickeringGridEnabled(localStorage.getItem('bell-timer-effect-flickering-grid') === 'true');
+        setFluidAnimEnabled(localStorage.getItem('bell-timer-effect-fluid-anim') === 'true');
       }
     };
 
@@ -137,6 +144,14 @@ export default function Home() {
   return (
     <div className="relative min-h-screen overflow-x-hidden">
       {/* Visual Effects Background */}
+      {fluidAnimEnabled && (
+        <FluidAnimation
+          className="fixed inset-0 z-0"
+          complexity={10}
+          baseColor={0.5}
+          fluidSpeed={0.05}
+        />
+      )}
       {gradientBgEnabled && <MeshGradientBg />}
       {flickeringGridEnabled && (
         <FlickeringGrid
