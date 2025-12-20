@@ -478,20 +478,6 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     return false;
   });
 
-  const [ouroborusEnabled, setOuroborusEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('bell-timer-effect-ouroborus') === 'true';
-    }
-    return false;
-  });
-
-  const [ouroborusPreset, setOuroborusPreset] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('bell-timer-ouroborus-preset') || 'woodGrain';
-    }
-    return 'woodGrain';
-  });
-
   const [fluidAnimEnabled, setFluidAnimEnabled] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('bell-timer-effect-fluid-anim') === 'true';
@@ -765,22 +751,6 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     }
   }, []);
 
-  const handleOuroborusToggle = useCallback((enabled: boolean) => {
-    setOuroborusEnabled(enabled);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bell-timer-effect-ouroborus', enabled.toString());
-      window.dispatchEvent(new CustomEvent('visual-effects-change'));
-    }
-  }, []);
-
-  const handleOuroborusPresetChange = useCallback((preset: string) => {
-    setOuroborusPreset(preset);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bell-timer-ouroborus-preset', preset);
-      window.dispatchEvent(new CustomEvent('visual-effects-change'));
-    }
-  }, []);
-
   const handleFluidAnimToggle = useCallback((enabled: boolean) => {
     setFluidAnimEnabled(enabled);
     if (typeof window !== 'undefined') {
@@ -788,17 +758,6 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
       window.dispatchEvent(new CustomEvent('visual-effects-change'));
     }
   }, []);
-
-  // Ouroborus preset options
-  const ouroborusPresetOptions = [
-    { value: 'woodGrain', label: 'Wood Grain' },
-    { value: 'chroma', label: 'Chroma' },
-    { value: 'inkBleed', label: 'Ink Bleed' },
-    { value: 'opArt', label: 'Op Art' },
-    { value: 'oldTv', label: 'Old TV' },
-    { value: 'fragments', label: 'Fragments' },
-    { value: 'random', label: 'Random' },
-  ];
 
   return (
     <>
@@ -936,44 +895,6 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                             />
                           </button>
                         </div>
-
-                        {/* Ouroborus Toggle */}
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
-                            Ouroborus Effect
-                          </span>
-                          <button
-                            onClick={() => handleOuroborusToggle(!ouroborusEnabled)}
-                            className={`w-10 h-6 rounded-full transition-colors relative ${ouroborusEnabled
-                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
-                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
-                              }`}
-                          >
-                            <span
-                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${ouroborusEnabled
-                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
-                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
-                                }`}
-                            />
-                          </button>
-                        </div>
-
-                        {/* Ouroborus Preset Dropdown - only shown when enabled */}
-                        {ouroborusEnabled && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="ml-4"
-                          >
-                            <SettingsDropdown
-                              label="Ouroborus Preset"
-                              options={ouroborusPresetOptions}
-                              value={ouroborusPreset}
-                              onChange={handleOuroborusPresetChange}
-                              theme={theme}
-                            />
-                          </motion.div>
-                        )}
 
                         {/* Fluid Animation Toggle */}
                         <div className="flex items-center justify-between">

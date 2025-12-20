@@ -69,11 +69,11 @@ function Schedule({ activeSchedule, assemblyLetter = 'B' }: ScheduleProps) {
     return <div className="w-full max-w-xl h-96 bg-white/5 backdrop-blur-md rounded-2xl"></div>;
   }
 
-  // Get theme-specific classes
+  // Get theme-specific classes with liquid glass effect
   const getBgClasses = () => {
     return isLightTheme
-      ? "w-full max-w-xl bg-[#f0f2f5]/80 backdrop-blur-md rounded-xl border border-[#333]/10 p-8 text-[#333]/70 overflow-hidden font-mono"
-      : "w-full max-w-xl bg-[#1a1e20]/90 backdrop-blur-md rounded-xl border border-white/20 p-8 text-white/90 overflow-hidden font-mono";
+      ? "w-full max-w-xl bg-gradient-to-br from-white/70 via-white/50 to-white/30 backdrop-blur-xl rounded-2xl border border-white/50 p-8 text-[#333]/70 overflow-hidden font-mono shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.8)]"
+      : "w-full max-w-xl bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl rounded-2xl border border-white/20 p-8 text-white/90 overflow-hidden font-mono shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.1)]";
   };
 
   const getHeaderClasses = () => {

@@ -400,19 +400,24 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
         >
-          {/* Countdown timer - Now showing first and always visible */}
+          {/* Countdown timer - Liquid Glass Effect on Numbers */}
           <div className="flex flex-col items-center space-y-4 mb-8">
             <div className="relative">
-              {/* Countdown with glass shimmer effect */}
+              {/* Liquid Glass Text Effect */}
               <motion.div
-                className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
+                className={`text-8xl font-bold tracking-tighter relative z-10`}
                 style={{
-                  // Glass text effect using text shadow and gradient
-                  textShadow: isLightTheme
-                    ? '0 1px 2px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05)'
-                    : '0 2px 4px rgba(0,0,0,0.3), 0 8px 16px rgba(0,0,0,0.2), 0 0 60px rgba(255,255,255,0.05)',
+                  // Liquid glass gradient text effect
+                  background: isLightTheme
+                    ? 'linear-gradient(180deg, rgba(51,51,51,1) 0%, rgba(51,51,51,0.8) 40%, rgba(51,51,51,0.6) 60%, rgba(51,51,51,0.9) 100%)'
+                    : 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.7) 35%, rgba(200,220,255,0.6) 50%, rgba(255,255,255,0.85) 65%, rgba(255,255,255,1) 100%)',
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  // Glass shadow for depth
+                  filter: isLightTheme
+                    ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.15)) drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
+                    : 'drop-shadow(0 2px 8px rgba(0,0,0,0.4)) drop-shadow(0 4px 16px rgba(0,0,0,0.3)) drop-shadow(0 0 40px rgba(255,255,255,0.08))',
                 }}
                 animate={{
                   scale: [1, 1.02, 1],
