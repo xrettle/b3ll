@@ -36,6 +36,7 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [activeSchedule, setActiveSchedule] = useState<ScheduleType | null>(null);
   const [assemblyLetter, setAssemblyLetter] = useState("B");
+  const [isLightTheme, setIsLightTheme] = useState(false);
 
   // Visual effects state
   const [gradientBgEnabled, setGradientBgEnabled] = useState(false);
@@ -45,6 +46,12 @@ export default function Home() {
   // Initialize component and set default schedule
   useEffect(() => {
     setMounted(true);
+
+    // Check theme
+    const checkTheme = () => {
+      setIsLightTheme(document.documentElement.classList.contains('light-theme'));
+    };
+    checkTheme();
 
     // Load visual effects settings
     if (typeof window !== 'undefined') {
@@ -147,20 +154,20 @@ export default function Home() {
       {fluidAnimEnabled && (
         <FluidAnimation
           className="fixed inset-0 z-0"
-          complexity={5}
-          baseColor={0.5}
-          fluidSpeed={0.03}
+          complexity={3}
+          baseColor={isLightTheme ? 0.5 : 0.15}
+          fluidSpeed={0.02}
         />
       )}
       {gradientBgEnabled && <MeshGradientBg />}
       {flickeringGridEnabled && (
         <FlickeringGrid
           className="fixed inset-0 z-0 pointer-events-none"
-          color="rgb(255, 255, 255)"
-          maxOpacity={0.15}
-          flickerChance={0.2}
+          color={isLightTheme ? "rgb(50, 50, 50)" : "rgb(255, 255, 255)"}
+          maxOpacity={isLightTheme ? 0.08 : 0.1}
+          flickerChance={0.15}
           squareSize={3}
-          gridGap={5}
+          gridGap={6}
         />
       )}
 

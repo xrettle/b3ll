@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { schedules, Schedule, Period, getCurrentDaySchedule, assemblyToPeriodMap, getAssemblyPeriodName } from '@/data/schedules';
 import { ScheduleSelector } from './ScheduleSelector';
-import { OuroborusEffect, OuroborusPresetKey } from './ui/ouroborus-effect';
-import { LiquidGlass } from './ui/liquid-glass';
 
 interface BellTimerProps {
   onScheduleUpdate?: (schedule: Schedule, assemblyLetter?: string) => void;
@@ -33,9 +31,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
   const [showCountdown, setShowCountdown] = useState<boolean>(false);
   const [isOutsideSchoolHours, setIsOutsideSchoolHours] = useState<boolean>(false);
 
-  // Ouroborus effect state
-  const [ouroborusEnabled, setOuroborusEnabled] = useState<boolean>(false);
-  const [ouroborusPreset, setOuroborusPreset] = useState<OuroborusPresetKey>('woodGrain');
+  // Glass effect state for countdown text
+  const [glassEffectEnabled, setGlassEffectEnabled] = useState<boolean>(true);
 
   // Check for theme changes
   useEffect(() => {
@@ -57,21 +54,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Load and listen for Ouroborus effect settings
-  useEffect(() => {
-    const loadOuroborusSettings = () => {
-      if (typeof window !== 'undefined') {
-        setOuroborusEnabled(localStorage.getItem('bell-timer-effect-ouroborus') === 'true');
-        const preset = localStorage.getItem('bell-timer-ouroborus-preset') || 'woodGrain';
-        setOuroborusPreset(preset as OuroborusPresetKey);
-      }
-    };
-
-    loadOuroborusSettings();
-
-    window.addEventListener('visual-effects-change', loadOuroborusSettings);
-    return () => window.removeEventListener('visual-effects-change', loadOuroborusSettings);
-  }, []);
+  // Glass effect is enabled by default for countdown text
+  // No localStorage settings needed - it's always on for the premium look
 
   // Set mounted to true when component mounts on client
   useEffect(() => {
@@ -419,31 +403,31 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
           {/* Countdown timer - Now showing first and always visible */}
           <div className="flex flex-col items-center space-y-4 mb-8">
             <div className="relative">
-              {/* Ouroborus effect overlay */}
-              {ouroborusEnabled && (
-                <OuroborusEffect
-                  preset={ouroborusPreset}
-                  className="rounded-xl"
-                />
-              )}
-              <LiquidGlass className="h-auto w-auto p-4" distortWidth={0.35} distortHeight={0.25} distortRadius={0.7}>
-                <motion.div
-                  className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
-                  animate={{
-                    scale: [1, 1.02, 1],
-                    opacity: 1
-                  }}
-                  initial={{ opacity: 0 }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 5,
-                    ease: "easeInOut",
-                    opacity: { delay: 0.7 }
-                  }}
-                >
-                  {formatCountdown()}
-                </motion.div>
-              </LiquidGlass>
+              {/* Countdown with glass shimmer effect */}
+              <motion.div
+                className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
+                style={{
+                  // Glass text effect using text shadow and gradient
+                  textShadow: isLightTheme
+                    ? '0 1px 2px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05)'
+                    : '0 2px 4px rgba(0,0,0,0.3), 0 8px 16px rgba(0,0,0,0.2), 0 0 60px rgba(255,255,255,0.05)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                }}
+                animate={{
+                  scale: [1, 1.02, 1],
+                  opacity: 1
+                }}
+                initial={{ opacity: 0 }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 5,
+                  ease: "easeInOut",
+                  opacity: { delay: 0.7 }
+                }}
+              >
+                {formatCountdown()}
+              </motion.div>
             </div>
 
             <motion.div
