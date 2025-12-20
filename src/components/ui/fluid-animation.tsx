@@ -232,22 +232,12 @@ export function FluidAnimation({
         resize();
         window.addEventListener('resize', resize);
 
-        // Animation loop with FPS limiting
+        // Animation loop - uncapped for smooth 60 FPS
         const startTime = Date.now();
         let animationId: number;
         let currentMorph = 0;
-        let lastFrameTime = 0;
-        const targetFPS = 30; // Limit to 30 FPS for performance
-        const frameInterval = 1000 / targetFPS;
 
-        const render = (timestamp: number) => {
-            // FPS limiting
-            if (timestamp - lastFrameTime < frameInterval) {
-                animationId = requestAnimationFrame(render);
-                return;
-            }
-            lastFrameTime = timestamp;
-
+        const render = () => {
             const currentTime = Date.now();
             const time = (currentTime - startTime) * 0.01;
 

@@ -1,66 +1,248 @@
-'use client';
+"use client"
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from "react"
 
-interface LiquidGlassProps {
-    children: React.ReactNode;
-    className?: string;
-    intensity?: number;
-    borderRadius?: string;
+import { cn } from "@/lib/utils"
+
+const smoothStep = (a: number, b: number, t: number): number => {
+    t = Math.max(0, Math.min(1, (t - a) / (b - a)))
+    return t * t * (3 - 2 * t)
 }
 
-// Simplified LiquidGlass component using CSS filters for a glass-like effect
-export function LiquidGlass({
+const length = (x: number, y: number): number => {
+    return Math.sqrt(x * x + y * y)
+}
+
+const roundedRectSDF = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+): number => {
+    const qx = Math.abs(x) - width + radius
+    const qy = Math.abs(y) - height + radius
+    return (
+        Math.min(Math.max(qx, qy), 0) +
+        length(Math.max(qx, 0), Math.max(qy, 0)) -
+        radius
+    )
+}
+
+interface UV {
+    x: number
+    y: number
+}
+
+export interface LiquidGlassProps extends React.ComponentProps<"div"> {
+    distortWidth?: number;
+    distortHeight?: number;
+    distortRadius?: number;
+    smoothStepEdge?: number;
+    distanceOffset?: number;
+}
+
+export const LiquidGlass = ({
+    className,
     children,
-    className = '',
-    intensity = 1,
-    borderRadius = '1rem'
-}: LiquidGlassProps) {
-    const glassStyles: React.CSSProperties = {
-        position: 'relative',
-        backdropFilter: `blur(${8 * intensity}px) saturate(${1.2 + 0.3 * intensity}) brightness(${1.05 + 0.1 * intensity})`,
-        WebkitBackdropFilter: `blur(${8 * intensity}px) saturate(${1.2 + 0.3 * intensity}) brightness(${1.05 + 0.1 * intensity})`,
-        background: `linear-gradient(
-      135deg,
-      rgba(255, 255, 255, ${0.1 * intensity}) 0%,
-      rgba(255, 255, 255, ${0.05 * intensity}) 50%,
-      rgba(255, 255, 255, ${0.02 * intensity}) 100%
-    )`,
-        boxShadow: `
-      0 8px 32px rgba(0, 0, 0, ${0.15 * intensity}),
-      inset 0 1px 0 rgba(255, 255, 255, ${0.2 * intensity}),
-      inset 0 -1px 0 rgba(0, 0, 0, ${0.1 * intensity})
-    `,
-        border: `1px solid rgba(255, 255, 255, ${0.15 * intensity})`,
-        borderRadius,
-        overflow: 'hidden',
-    };
+    distortWidth = 0.3,
+    distortHeight = 0.2,
+    distortRadius = 0.6,
+    smoothStepEdge = 0.8,
+    distanceOffset = 0.15,
+    ...props
+}: LiquidGlassProps) => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [width, setWidth] = useState(1)
+    const [height, setHeight] = useState(1)
+
+    useEffect(() => {
+        const element = containerRef.current
+        if (!element) return
+
+        setWidth(element.offsetWidth)
+        setHeight(element.offsetHeight)
+
+        const resizeObserver = new ResizeObserver(entries => {
+            if (entries[0]) {
+                const { width, height } = entries[0].contentRect
+                setWidth(width)
+                setHeight(height)
+            }
+        })
+
+        resizeObserver.observe(element)
+
+        return () => {
+            resizeObserver.disconnect()
+        }
+    }, [])
+
+    const canvasRef = useRef<HTMLCanvasElement | null>(null)
+    const feImageRef = useRef<SVGFEImageElement | null>(null)
+    const feDisplacementMapRef = useRef<SVGFEDisplacementMapElement | null>(null)
+
+    const filterId = useRef(
+        "liquid-glass-" + Math.random().toString(36).slice(2, 11)
+    )
+
+    const updateShader = useCallback(() => {
+        if (
+            !canvasRef.current ||
+            !feImageRef.current ||
+            !feDisplacementMapRef.current ||
+            width <= 1 ||
+            height <= 1
+        )
+            return
+
+        const canvas = canvasRef.current
+        const context = canvas.getContext("2d")
+        if (!context) return
+
+        const canvasDPI = 1
+        const w = Math.floor(width * canvasDPI)
+        const h = Math.floor(height * canvasDPI)
+        if (w <= 0 || h <= 0) return;
+
+        canvas.width = w;
+        canvas.height = h;
+
+        const data = new Uint8ClampedArray(w * h * 4)
+        let maxScale = 0
+        const rawValues: number[] = []
+
+        const fragment = (uv: UV) => {
+            const ix = uv.x - 0.5
+            const iy = uv.y - 0.5
+            const distanceToEdge = roundedRectSDF(
+                ix,
+                iy,
+                distortWidth,
+                distortHeight,
+                distortRadius
+            )
+            const displacement = smoothStep(
+                smoothStepEdge,
+                0,
+                distanceToEdge - distanceOffset
+            )
+            const scaled = smoothStep(0, 1, displacement)
+            return { x: ix * scaled + 0.5, y: iy * scaled + 0.5 }
+        }
+
+        for (let i = 0; i < w * h; i++) {
+            const x = i % w
+            const y = Math.floor(i / w)
+            const pos = fragment({ x: x / w, y: y / h })
+            const dx = pos.x * w - x
+            const dy = pos.y * h - y
+            maxScale = Math.max(maxScale, Math.abs(dx), Math.abs(dy))
+            rawValues.push(dx, dy)
+        }
+
+        maxScale *= 0.5
+
+        let dataIndex = 0
+        let rawValueIndex = 0
+        for (let i = 0; i < w * h; i++) {
+            const r = rawValues[rawValueIndex++] / maxScale + 0.5
+            const g = rawValues[rawValueIndex++] / maxScale + 0.5
+            data[dataIndex++] = r * 255
+            data[dataIndex++] = g * 255
+            data[dataIndex++] = 0
+            data[dataIndex++] = 255
+        }
+
+        context.putImageData(new ImageData(data, w, h), 0, 0)
+
+        feImageRef.current.setAttributeNS(
+            "http://www.w3.org/1999/xlink",
+            "href",
+            canvas.toDataURL()
+        )
+        feDisplacementMapRef.current.setAttribute(
+            "scale",
+            (maxScale / canvasDPI).toString()
+        )
+    }, [
+        width,
+        height,
+        distortWidth,
+        distortHeight,
+        distortRadius,
+        smoothStepEdge,
+        distanceOffset,
+    ])
+
+    useEffect(() => {
+        updateShader()
+    }, [updateShader])
 
     return (
-        <div style={glassStyles} className={className}>
-            {/* Highlight effect */}
-            <div
+        <>
+            <svg
+                width="0"
+                height="0"
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '50%',
-                    background: `linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, ${0.15 * intensity}),
-            rgba(255, 255, 255, 0)
-          )`,
-                    pointerEvents: 'none',
-                    borderRadius: `${borderRadius} ${borderRadius} 50% 50%`,
+                    position: "fixed",
+                    pointerEvents: "none",
+                    zIndex: -1,
                 }}
-            />
-            {/* Content */}
-            <div style={{ position: 'relative', zIndex: 1 }}>
+            >
+                <defs>
+                    <filter
+                        id={filterId.current}
+                        filterUnits="userSpaceOnUse"
+                        colorInterpolationFilters="sRGB"
+                        x="0"
+                        y="0"
+                        width={width}
+                        height={height}
+                    >
+                        <feImage
+                            ref={feImageRef}
+                            width={width}
+                            height={height}
+                            result={filterId.current + "_map"}
+                        />
+                        <feDisplacementMap
+                            ref={feDisplacementMapRef}
+                            in="SourceGraphic"
+                            in2={filterId.current + "_map"}
+                            xChannelSelector="R"
+                            yChannelSelector="G"
+                            scale="0"
+                        />
+                    </filter>
+                </defs>
+            </svg>
+
+            <div
+                ref={containerRef}
+                style={{
+                    filter:
+                        "url(#" + filterId.current + ") blur(0.25px) contrast(1.2) brightness(1.05) saturate(1.1)",
+                    boxShadow:
+                        "0 4px 8px rgba(0, 0, 0, 0.25), 0 -10px 25px inset rgba(0, 0, 0, 0.15)",
+                }}
+                className={cn(
+                    "flex items-center justify-center rounded-full border",
+                    className
+                )}
+                {...props}
+            >
                 {children}
             </div>
-        </div>
-    );
+
+            <canvas
+                ref={canvasRef}
+                width={width}
+                height={height}
+                style={{ display: "none" }}
+            />
+        </>
+    )
 }
 
 export default LiquidGlass;

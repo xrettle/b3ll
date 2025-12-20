@@ -400,19 +400,12 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
         onAssemblyLetterChange={handleAssemblyLetterChange}
       />
 
-      {/* Minimal background gradient - changes with theme */}
-      <div className={`absolute inset-0 bg-gradient-to-r ${isLightTheme
-        ? 'from-[#f0f2f5] to-[#e4e6eb]'
-        : 'from-[#151718] to-[#292f33]'
-        } z-0`}></div>
-
-      {/* Grid pattern overlay - changes with theme */}
-      <div className={`absolute inset-0 z-[1] opacity-[0.05] ${isLightTheme ? 'filter invert' : ''}`}
-        style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M1 0V20M0 1H20\' stroke=\'white\'/%3E%3C/svg%3E")',
-          backgroundSize: '20px 20px'
-        }}>
-      </div>
+      {/* Background is now handled by visual effects in page.tsx */}
+      {/* Fallback gradient when no effects are enabled - transparent to allow effects through */}
+      <div className={`absolute inset-0 z-0 ${isLightTheme
+        ? 'bg-transparent'
+        : 'bg-transparent'
+        }`}></div>
 
       {/* Main content container */}
       <div className="relative z-10 w-full max-w-xl mx-auto text-center">
@@ -425,15 +418,15 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
         >
           {/* Countdown timer - Now showing first and always visible */}
           <div className="flex flex-col items-center space-y-4 mb-8">
-            <LiquidGlass intensity={0.8} borderRadius="1.5rem" className="p-8">
-              <div className="relative">
-                {/* Ouroborus effect overlay */}
-                {ouroborusEnabled && (
-                  <OuroborusEffect
-                    preset={ouroborusPreset}
-                    className="rounded-xl"
-                  />
-                )}
+            <div className="relative">
+              {/* Ouroborus effect overlay */}
+              {ouroborusEnabled && (
+                <OuroborusEffect
+                  preset={ouroborusPreset}
+                  className="rounded-xl"
+                />
+              )}
+              <LiquidGlass className="h-auto w-auto p-4" distortWidth={0.35} distortHeight={0.25} distortRadius={0.7}>
                 <motion.div
                   className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
                   animate={{
@@ -450,8 +443,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
                 >
                   {formatCountdown()}
                 </motion.div>
-              </div>
-            </LiquidGlass>
+              </LiquidGlass>
+            </div>
 
             <motion.div
               className={`text-sm uppercase tracking-wider ${getUntilClass()} mb-5`}

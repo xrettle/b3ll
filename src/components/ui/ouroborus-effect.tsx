@@ -157,19 +157,8 @@ export function OuroborusEffect({ preset = 'woodGrain', className = '' }: Ourobo
             return n - Math.floor(n);
         };
 
-        // FPS limiting for performance
-        let lastFrameTime = 0;
-        const targetFPS = 20; // Lower FPS for this overlay effect
-        const frameInterval = 1000 / targetFPS;
-
-        const animate = (timestamp: number) => {
-            // FPS limiting
-            if (timestamp - lastFrameTime < frameInterval) {
-                animationRef.current = requestAnimationFrame(animate);
-                return;
-            }
-            lastFrameTime = timestamp;
-
+        // Animation loop - uncapped for smooth 60 FPS
+        const animate = () => {
             time += 0.016 * config.perlinspeed * 2;
 
             const parent = canvas.parentElement;
