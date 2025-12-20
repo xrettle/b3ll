@@ -54,6 +54,114 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Dynamic tab title and favicon based on countdown
+  useEffect(() => {
+    if (!mounted || !showCountdown) return;
+
+    // Extract period identifier (number or letter)
+    const getPeriodIdentifier = (periodName: string): string => {
+      // Match "Period X" or just letter/number
+      const periodMatch = periodName.match(/Period\s*(\d+)/i);
+      if (periodMatch) return periodMatch[1];
+
+      // For assembly letters A-H
+      const letterMatch = periodName.match(/^([A-H])$/i);
+      if (letterMatch) return letterMatch[1];
+
+      // For other period names, use abbreviated version
+      if (periodName.toLowerCase() === 'brunch') return 'Brunch';
+      if (periodName.toLowerCase() === 'lunch') return 'Lunch';
+      if (periodName.toLowerCase() === 'tutorial') return 'Tutorial';
+      if (periodName.toLowerCase() === 'advisory') return 'Advisory';
+      if (periodName.toLowerCase() === 'free') return 'Free';
+
+      return periodName.slice(0, 8);
+    };
+
+    // Get color based on time remaining
+    const getUrgencyColor = (totalSeconds: number): string => {
+      if (totalSeconds > 600) return '#0b731e'; // Green: > 10 min
+      if (totalSeconds > 360) return '#c4c241'; // Yellow: 6-10 min
+      if (totalSeconds > 120) return '#b8812e'; // Orange: 2-6 min
+      return '#b84a2e'; // Red: < 2 min
+    };
+
+    // Check if should flash (under 30 seconds)
+    const shouldFlash = (totalSeconds: number): boolean => {
+      return totalSeconds <= 30 && totalSeconds > 0;
+    };
+
+    // Create dynamic favicon canvas
+    const createFavicon = (color: string): string => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) return '';
+
+      // Draw rounded square
+      const radius = 6;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(32 - radius, 0);
+      ctx.quadraticCurveTo(32, 0, 32, radius);
+      ctx.lineTo(32, 32 - radius);
+      ctx.quadraticCurveTo(32, 32, 32 - radius, 32);
+      ctx.lineTo(radius, 32);
+      ctx.quadraticCurveTo(0, 32, 0, 32 - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      return canvas.toDataURL('image/png');
+    };
+
+    // Update favicon
+    const updateFavicon = (dataUrl: string) => {
+      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = dataUrl;
+    };
+
+    // Calculate total seconds remaining
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    // Update document title
+    const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const periodId = getPeriodIdentifier(currentPeriod);
+    document.title = `${timeDisplay} | ${periodId}`;
+
+    // Flash effect for under 30 seconds
+    let flashInterval: NodeJS.Timeout | null = null;
+
+    if (shouldFlash(totalSeconds)) {
+      let isRed = true;
+      flashInterval = setInterval(() => {
+        const flashColor = isRed ? '#b84a2e' : '#a30000';
+        updateFavicon(createFavicon(flashColor));
+        isRed = !isRed;
+      }, 500);
+    } else {
+      // Normal color based on urgency
+      const color = getUrgencyColor(totalSeconds);
+      updateFavicon(createFavicon(color));
+    }
+
+    return () => {
+      if (flashInterval) {
+        clearInterval(flashInterval);
+      }
+    };
+  }, [mounted, showCountdown, hours, minutes, seconds, currentPeriod]);
+
   // Glass effect is enabled by default for countdown text
   // No localStorage settings needed - it's always on for the premium look
 
