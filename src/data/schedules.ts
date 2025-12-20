@@ -141,15 +141,158 @@ export const schedules: { [key: string]: Schedule } = {
       { name: "H", startTime: "2:23", endTime: "3:03" },
       { name: "Free", startTime: "3:03", endTime: "23:59" }
     ]
+  },
+  // Wednesday Non-Block (no advisory) - used during special weeks
+  wednesdayNonBlock: {
+    name: "wednesdayNonBlock",
+    displayName: "Wednesday (Non-Block)",
+    periods: [
+      { name: "Warning Bell", startTime: "8:25", endTime: "8:25" },
+      { name: "Period 1", startTime: "8:30", endTime: "9:16", duration: "(46)" },
+      { name: "Period 2", startTime: "9:19", endTime: "10:05", duration: "(46)" },
+      { name: "Period 3", startTime: "10:08", endTime: "10:57", duration: "(49)" },
+      { name: "Brunch", startTime: "10:57", endTime: "11:11", duration: "(14)" },
+      { name: "Period 4", startTime: "11:14", endTime: "12:00", duration: "(46)" },
+      { name: "Period 5", startTime: "12:03", endTime: "12:49", duration: "(46)" },
+      { name: "Lunch", startTime: "12:49", endTime: "1:25", duration: "(36)" },
+      { name: "Period 6", startTime: "1:28", endTime: "2:14", duration: "(46)" },
+      { name: "Period 7", startTime: "2:17", endTime: "3:03", duration: "(46)" },
+      { name: "Free", startTime: "3:03", endTime: "23:59" }
+    ]
+  },
+  // Friday with Tutorial (instead of Advisory)
+  fridayTutorial: {
+    name: "fridayTutorial",
+    displayName: "Friday (Tutorial)",
+    periods: [
+      { name: "Warning Bell", startTime: "8:25", endTime: "8:25" },
+      { name: "Period 1", startTime: "8:30", endTime: "9:12", duration: "(42)" },
+      { name: "Period 2", startTime: "9:15", endTime: "9:57", duration: "(42)" },
+      { name: "Period 3", startTime: "10:00", endTime: "10:42", duration: "(42)" },
+      { name: "Brunch", startTime: "10:42", endTime: "10:56", duration: "(14)" },
+      { name: "Tutorial", startTime: "10:59", endTime: "11:27", duration: "(28)" },
+      { name: "Period 4", startTime: "11:30", endTime: "12:12", duration: "(42)" },
+      { name: "Period 5", startTime: "12:15", endTime: "12:57", duration: "(42)" },
+      { name: "Lunch", startTime: "12:57", endTime: "1:33", duration: "(36)" },
+      { name: "Period 6", startTime: "1:36", endTime: "2:18", duration: "(42)" },
+      { name: "Period 7", startTime: "2:21", endTime: "3:03", duration: "(42)" },
+      { name: "Free", startTime: "3:03", endTime: "23:59" }
+    ]
+  },
+  // Holiday / No School
+  holiday: {
+    name: "holiday",
+    displayName: "No School",
+    periods: [
+      { name: "Holiday", startTime: "0:00", endTime: "23:59", duration: "Enjoy your day off!" }
+    ]
   }
 };
 
-// Function to get current day schedule
-export function getCurrentDaySchedule(): Schedule {
-  const now = new Date();
-  const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
+// Q2 2025-2026 Schedule Overrides
+// Maps specific dates to their schedule types
+export const q2ScheduleOverrides: { [date: string]: string } = {
+  // Week 10/20-10/24: 8th Graders in Yosemite - All Monday schedules
+  '2025-10-20': 'monday',
+  '2025-10-21': 'monday', // Tuesday uses Monday schedule
+  '2025-10-22': 'wednesdayNonBlock', // Wednesday Non-Block, No Advisory
+  '2025-10-23': 'monday', // Thursday uses Monday schedule
+  '2025-10-24': 'monday', // Friday uses Monday schedule
 
-  switch (day) {
+  // Week 10/27-10/31: Normal week (defaults apply)
+  // HallowEgan on Friday (still uses friday schedule)
+
+  // Week 11/3-11/7: Normal week (defaults apply)
+
+  // Week 11/10-11/14: Veterans Day week
+  '2025-11-11': 'holiday', // Veterans Day - No School
+  '2025-11-14': 'fridayTutorial', // Friday with Tutorial
+
+  // Week 11/17-11/21: Turkey Trot week
+  '2025-11-21': 'monday', // Friday uses Monday Schedule
+
+  // Week 11/24-11/28: Thanksgiving Break
+  '2025-11-24': 'holiday',
+  '2025-11-25': 'holiday',
+  '2025-11-26': 'holiday',
+  '2025-11-27': 'holiday',
+  '2025-11-28': 'holiday',
+
+  // Week 12/1-12/5
+  '2025-12-05': 'minimumDay', // Minimum Day - Holiday Faire
+
+  // Week 12/8-12/12
+  '2025-12-12': 'assembly', // Assembly E - Winter Concert
+
+  // Week 12/15-12/19
+  '2025-12-19': 'monday', // Friday uses Monday Schedule
+
+  // December Break (12/22 - 1/2)
+  '2025-12-22': 'holiday',
+  '2025-12-23': 'holiday',
+  '2025-12-24': 'holiday',
+  '2025-12-25': 'holiday',
+  '2025-12-26': 'holiday',
+  '2025-12-27': 'holiday',
+  '2025-12-28': 'holiday',
+  '2025-12-29': 'holiday',
+  '2025-12-30': 'holiday',
+  '2025-12-31': 'holiday',
+  '2026-01-01': 'holiday',
+  '2026-01-02': 'holiday',
+
+  // Week 1/5-1/9: Viking Showcase (normal schedules apply)
+
+  // Week 1/12-1/16: Viking Showcase (normal schedules apply)
+};
+
+// Check if current date is during Winter Break (for special effects)
+export function isWinterBreak(date?: Date): boolean {
+  const checkDate = date || new Date();
+  const month = checkDate.getMonth(); // 0-indexed
+  const day = checkDate.getDate();
+  const year = checkDate.getFullYear();
+
+  // Winter break is December 22 to January 2
+  if (year === 2025 && month === 11 && day >= 22) return true; // Dec 22-31, 2025
+  if (year === 2026 && month === 0 && day <= 2) return true; // Jan 1-2, 2026
+
+  return false;
+}
+
+// Get the assembly letter for a specific date (e.g., "E" for 12/12)
+export function getAssemblyLetterForDate(date?: Date): string | null {
+  const checkDate = date || new Date();
+  const dateStr = checkDate.toISOString().split('T')[0];
+
+  // December 12, 2025 is Assembly E (Winter Concert)
+  if (dateStr === '2025-12-12') return 'E';
+
+  return null;
+}
+
+// Function to get current day schedule (with Q2 overrides)
+export function getCurrentDaySchedule(date?: Date): Schedule {
+  const now = date || new Date();
+
+  // Format date as YYYY-MM-DD for lookup
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
+
+  // Check for Q2 date override first
+  if (q2ScheduleOverrides[dateStr]) {
+    const overrideSchedule = schedules[q2ScheduleOverrides[dateStr]];
+    if (overrideSchedule) {
+      return overrideSchedule;
+    }
+  }
+
+  // Fall back to default day-of-week schedule
+  const dayOfWeek = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
+
+  switch (dayOfWeek) {
     case 0: // Sunday
       return schedules.sunday;
     case 1: // Monday

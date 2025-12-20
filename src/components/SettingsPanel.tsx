@@ -485,6 +485,13 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     return false;
   });
 
+  const [snowEffectEnabled, setSnowEffectEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-effect-snow') === 'true';
+    }
+    return false;
+  });
+
   const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
 
   // The Konami code sequence
@@ -759,6 +766,15 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     }
   }, []);
 
+  const handleSnowEffectToggle = useCallback((enabled: boolean) => {
+    setSnowEffectEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-effect-snow', enabled.toString());
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
+
   return (
     <>
       {/* Backdrop with AnimatePresence for clean exit */}
@@ -910,6 +926,27 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                           >
                             <span
                               className={`absolute top-1 w-4 h-4 rounded-full transition-all ${fluidAnimEnabled
+                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
+                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
+                                }`}
+                            />
+                          </button>
+                        </div>
+
+                        {/* Snow Effect Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            ❄️ Snow Effect
+                          </span>
+                          <button
+                            onClick={() => handleSnowEffectToggle(!snowEffectEnabled)}
+                            className={`w-10 h-6 rounded-full transition-colors relative ${snowEffectEnabled
+                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
+                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
+                              }`}
+                          >
+                            <span
+                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${snowEffectEnabled
                                 ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
                                 : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
                                 }`}

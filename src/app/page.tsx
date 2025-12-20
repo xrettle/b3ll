@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { Header } from '@/components/Header'
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Schedule as ScheduleType, getCurrentDaySchedule, schedules } from '@/data/schedules'
+import { Schedule as ScheduleType, getCurrentDaySchedule, schedules, isWinterBreak } from '@/data/schedules'
 
 // Disable SSR completely for all dynamic components
 const BellTimer = dynamic(() => import('@/components/BellTimer').then(mod => mod.BellTimer), {
@@ -31,17 +31,28 @@ const FluidAnimation = dynamic(() => import('@/components/ui/fluid-animation').t
   ssr: false,
 })
 
+// Holiday effects
+const ChristmasConfetti = dynamic(() => import('@/components/ui/christmas-confetti').then(mod => mod.default), {
+  ssr: false,
+})
+
+const SnowEffect = dynamic(() => import('@/components/ui/snow-effect').then(mod => mod.default), {
+  ssr: false,
+})
+
 export default function Home() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [activeSchedule, setActiveSchedule] = useState<ScheduleType | null>(null);
   const [assemblyLetter, setAssemblyLetter] = useState("B");
   const [isLightTheme, setIsLightTheme] = useState(false);
+  const [isWinterBreakNow, setIsWinterBreakNow] = useState(false);
 
   // Visual effects state
   const [gradientBgEnabled, setGradientBgEnabled] = useState(false);
   const [flickeringGridEnabled, setFlickeringGridEnabled] = useState(false);
   const [fluidAnimEnabled, setFluidAnimEnabled] = useState(false);
+  const [snowEffectEnabled, setSnowEffectEnabled] = useState(false);
 
   // Initialize component and set default schedule
   useEffect(() => {
@@ -53,11 +64,15 @@ export default function Home() {
     };
     checkTheme();
 
+    // Check if it's winter break
+    setIsWinterBreakNow(isWinterBreak());
+
     // Load visual effects settings
     if (typeof window !== 'undefined') {
       setGradientBgEnabled(localStorage.getItem('bell-timer-effect-gradient-bg') === 'true');
       setFlickeringGridEnabled(localStorage.getItem('bell-timer-effect-flickering-grid') === 'true');
       setFluidAnimEnabled(localStorage.getItem('bell-timer-effect-fluid-anim') === 'true');
+      setSnowEffectEnabled(localStorage.getItem('bell-timer-effect-snow') === 'true');
     }
 
     // Get saved schedule from localStorage if available
@@ -170,6 +185,10 @@ export default function Home() {
           gridGap={6}
         />
       )}
+
+      {/* Holiday Effects */}
+      {isWinterBreakNow && <ChristmasConfetti />}
+      {snowEffectEnabled && <SnowEffect intensity={5} />}
 
       <Header />
 
