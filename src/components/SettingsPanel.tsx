@@ -1,8 +1,8 @@
 'use client';
 
+import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Globe, Keyboard as KeyboardIcon } from 'lucide-react';
-import { ReactNode, useState, useEffect, useRef, KeyboardEvent, useCallback } from 'react';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -294,7 +294,7 @@ function KeybindRecorder({
     } else {
       // Remove all event listeners
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', () => {});
+      window.removeEventListener('keyup', () => { });
 
       // Remove document click handler if it exists
       if (documentClickRef.current) {
@@ -306,7 +306,7 @@ function KeybindRecorder({
     // Cleanup function
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', () => {});
+      window.removeEventListener('keyup', () => { });
 
       // Remove document click handler if it exists
       if (documentClickRef.current) {
@@ -331,11 +331,10 @@ function KeybindRecorder({
     <>
       {/* Button to start recording */}
       <button
-        className={`w-full h-10 ${
-          isLightTheme
-            ? 'bg-[#333]/10 text-[#333] hover:bg-[#333]/15'
-            : 'bg-white/10 text-white hover:bg-white/15'
-        } rounded-xl flex items-center justify-between px-3 transition-colors`}
+        className={`w-full h-10 ${isLightTheme
+          ? 'bg-[#333]/10 text-[#333] hover:bg-[#333]/15'
+          : 'bg-white/10 text-white hover:bg-white/15'
+          } rounded-xl flex items-center justify-between px-3 transition-colors`}
         onClick={startRecording}
       >
         <span className="flex items-center">
@@ -362,14 +361,13 @@ function KeybindRecorder({
               {/* Central content - added data attribute for reference */}
               <motion.div
                 data-keybind-modal
-                className={`text-center p-10 rounded-xl ${
-                  isLightTheme ? 'bg-white/20 text-white' : 'bg-black/40 text-white'
-                } max-w-md`}
+                className={`text-center p-10 rounded-xl ${isLightTheme ? 'bg-white/20 text-white' : 'bg-black/40 text-white'
+                  } max-w-md`}
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 {/* Added a Cancel button */}
                 <button
@@ -463,6 +461,35 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
       return localStorage.getItem('bell-timer-konami-activated') === 'true';
     }
     return false;
+  });
+
+  // Visual effects state
+  const [flickeringGridEnabled, setFlickeringGridEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-effect-flickering-grid') === 'true';
+    }
+    return false;
+  });
+
+  const [gradientBgEnabled, setGradientBgEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-effect-gradient-bg') === 'true';
+    }
+    return false;
+  });
+
+  const [ouroborusEnabled, setOuroborusEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-effect-ouroborus') === 'true';
+    }
+    return false;
+  });
+
+  const [ouroborusPreset, setOuroborusPreset] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-ouroborus-preset') || 'woodGrain';
+    }
+    return 'woodGrain';
   });
 
   const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
@@ -713,6 +740,51 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     applyFontSize(newSize);
   };
 
+  // Visual effects handlers
+  const handleFlickeringGridToggle = useCallback((enabled: boolean) => {
+    setFlickeringGridEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-effect-flickering-grid', enabled.toString());
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
+  const handleGradientBgToggle = useCallback((enabled: boolean) => {
+    setGradientBgEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-effect-gradient-bg', enabled.toString());
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
+  const handleOuroborusToggle = useCallback((enabled: boolean) => {
+    setOuroborusEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-effect-ouroborus', enabled.toString());
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
+  const handleOuroborusPresetChange = useCallback((preset: string) => {
+    setOuroborusPreset(preset);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-ouroborus-preset', preset);
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
+  // Ouroborus preset options
+  const ouroborusPresetOptions = [
+    { value: 'woodGrain', label: 'Wood Grain' },
+    { value: 'chroma', label: 'Chroma' },
+    { value: 'inkBleed', label: 'Ink Bleed' },
+    { value: 'opArt', label: 'Op Art' },
+    { value: 'oldTv', label: 'Old TV' },
+    { value: 'fragments', label: 'Fragments' },
+    { value: 'random', label: 'Random' },
+  ];
+
   return (
     <>
       {/* Backdrop with AnimatePresence for clean exit */}
@@ -733,28 +805,24 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className={`fixed top-0 right-0 bottom-0 w-80 backdrop-blur-sm z-50 shadow-xl will-change-transform ${
-              theme === 'light' ? 'bg-[#f0f2f5]/90' : 'bg-[#1a1e20]/90'
-            }`}
+            className={`fixed top-0 right-0 bottom-0 w-80 backdrop-blur-sm z-50 shadow-xl will-change-transform ${theme === 'light' ? 'bg-[#f0f2f5]/90' : 'bg-[#1a1e20]/90'
+              }`}
             initial="closed"
             animate="open"
             exit="closed"
             variants={panelVariants}
           >
             {/* Header */}
-            <div className={`flex justify-between items-center p-4 border-b ${
-              theme === 'light' ? 'border-[#333]/10' : 'border-white/10'
-            }`}>
-              <h2 className={`text-lg font-medium ${
-                theme === 'light' ? 'text-[#333]/90' : 'text-white/90'
-              }`} style={{ fontFamily: '"Fira Code", monospace' }}>Settings</h2>
+            <div className={`flex justify-between items-center p-4 border-b ${theme === 'light' ? 'border-[#333]/10' : 'border-white/10'
+              }`}>
+              <h2 className={`text-lg font-medium ${theme === 'light' ? 'text-[#333]/90' : 'text-white/90'
+                }`} style={{ fontFamily: '"Fira Code", monospace' }}>Settings</h2>
               <motion.button
                 onClick={onClose}
-                className={`p-2 rounded-full transition-colors ${
-                  theme === 'light'
-                    ? 'text-[#333]/60 hover:bg-[#333]/5'
-                    : 'text-white/60 hover:bg-white/5'
-                }`}
+                className={`p-2 rounded-full transition-colors ${theme === 'light'
+                  ? 'text-[#333]/60 hover:bg-[#333]/5'
+                  : 'text-white/60 hover:bg-white/5'
+                  }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -764,9 +832,8 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
 
             {/* Content */}
             <motion.div
-              className={`p-4 font-mono ${
-                theme === 'light' ? 'text-[#333]/80' : 'text-white/80'
-              } overflow-y-auto max-h-[calc(100vh-60px)]`}
+              className={`p-4 font-mono ${theme === 'light' ? 'text-[#333]/80' : 'text-white/80'
+                } overflow-y-auto max-h-[calc(100vh-60px)]`}
               style={{ fontFamily: '"Fira Code", monospace' }}
               variants={contentVariants}
             >
@@ -803,6 +870,98 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                       />
                     </motion.div>
 
+                    {/* Visual Effects Section */}
+                    <motion.div
+                      variants={itemVariants}
+                      className={`pt-4 border-t ${theme === 'light' ? 'border-[#333]/10' : 'border-white/10'}`}
+                    >
+                      <label className={`text-xs uppercase tracking-wider ${theme === 'light' ? 'text-[#333]/50' : 'text-white/50'} block mb-3`}>
+                        Visual Effects
+                      </label>
+
+                      <div className="space-y-3">
+                        {/* Flickering Grid Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            Flickering Grid
+                          </span>
+                          <button
+                            onClick={() => handleFlickeringGridToggle(!flickeringGridEnabled)}
+                            className={`w-10 h-6 rounded-full transition-colors relative ${flickeringGridEnabled
+                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
+                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
+                              }`}
+                          >
+                            <span
+                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${flickeringGridEnabled
+                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
+                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
+                                }`}
+                            />
+                          </button>
+                        </div>
+
+                        {/* Gradient Background Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            Gradient Background
+                          </span>
+                          <button
+                            onClick={() => handleGradientBgToggle(!gradientBgEnabled)}
+                            className={`w-10 h-6 rounded-full transition-colors relative ${gradientBgEnabled
+                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
+                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
+                              }`}
+                          >
+                            <span
+                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${gradientBgEnabled
+                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
+                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
+                                }`}
+                            />
+                          </button>
+                        </div>
+
+                        {/* Ouroborus Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            Ouroborus Effect
+                          </span>
+                          <button
+                            onClick={() => handleOuroborusToggle(!ouroborusEnabled)}
+                            className={`w-10 h-6 rounded-full transition-colors relative ${ouroborusEnabled
+                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
+                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
+                              }`}
+                          >
+                            <span
+                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${ouroborusEnabled
+                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
+                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
+                                }`}
+                            />
+                          </button>
+                        </div>
+
+                        {/* Ouroborus Preset Dropdown - only shown when enabled */}
+                        {ouroborusEnabled && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            className="ml-4"
+                          >
+                            <SettingsDropdown
+                              label="Ouroborus Preset"
+                              options={ouroborusPresetOptions}
+                              value={ouroborusPreset}
+                              onChange={handleOuroborusPresetChange}
+                              theme={theme}
+                            />
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.div>
+
                     {/* Redirect Key Section - only shown after Konami code */}
                     {konamiActivated && (
                       <motion.div
@@ -810,22 +969,19 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         transition={{ duration: 0.3 }}
-                        className={`pt-4 border-t ${
-                          theme === 'light' ? 'border-[#333]/10' : 'border-white/10'
-                        }`}
+                        className={`pt-4 border-t ${theme === 'light' ? 'border-[#333]/10' : 'border-white/10'
+                          }`}
                       >
-                        <label className={`text-xs uppercase tracking-wider ${
-                          theme === 'light' ? 'text-[#333]/50' : 'text-white/50'
-                        } block mb-2`}>
+                        <label className={`text-xs uppercase tracking-wider ${theme === 'light' ? 'text-[#333]/50' : 'text-white/50'
+                          } block mb-2`}>
                           Redirect Key
                         </label>
 
                         <div className="space-y-3">
                           {/* Keybind Recorder */}
                           <div className="space-y-1">
-                            <label className={`text-xs ${
-                              theme === 'light' ? 'text-[#333]/60' : 'text-white/60'
-                            }`}>
+                            <label className={`text-xs ${theme === 'light' ? 'text-[#333]/60' : 'text-white/60'
+                              }`}>
                               Shortcut:
                             </label>
                             <KeybindRecorder
@@ -837,16 +993,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
 
                           {/* URL Input */}
                           <div className="space-y-1">
-                            <label className={`text-xs ${
-                              theme === 'light' ? 'text-[#333]/60' : 'text-white/60'
-                            }`}>
+                            <label className={`text-xs ${theme === 'light' ? 'text-[#333]/60' : 'text-white/60'
+                              }`}>
                               Redirect URL:
                             </label>
                             <div className="flex items-center">
-                              <div className={`h-10 px-3 flex items-center ${
-                                theme === 'light'
-                                  ? 'bg-[#333]/5 text-[#333]/60'
-                                  : 'bg-white/5 text-white/60'
+                              <div className={`h-10 px-3 flex items-center ${theme === 'light'
+                                ? 'bg-[#333]/5 text-[#333]/60'
+                                : 'bg-white/5 text-white/60'
                                 } rounded-l-xl`}>
                                 <Globe size={14} />
                               </div>
@@ -855,16 +1009,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                                 value={redirectUrl}
                                 onChange={handleRedirectUrlChange}
                                 placeholder="Enter URL (e.g., google.com)"
-                                className={`w-full h-10 px-2 focus:outline-none ${
-                                  theme === 'light'
-                                    ? 'bg-[#333]/10 text-[#333] placeholder-[#333]/40'
-                                    : 'bg-white/10 text-white placeholder-white/40'
-                                } rounded-r-xl`}
+                                className={`w-full h-10 px-2 focus:outline-none ${theme === 'light'
+                                  ? 'bg-[#333]/10 text-[#333] placeholder-[#333]/40'
+                                  : 'bg-white/10 text-white placeholder-white/40'
+                                  } rounded-r-xl`}
                               />
                             </div>
-                            <p className={`text-xs mt-1 ${
-                              theme === 'light' ? 'text-[#333]/50' : 'text-white/50'
-                            }`}>
+                            <p className={`text-xs mt-1 ${theme === 'light' ? 'text-[#333]/50' : 'text-white/50'
+                              }`}>
                               {redirectKey !== 'None' && redirectUrl
                                 ? `Press ${redirectKey} to go to ${redirectUrl}`
                                 : 'Set a key and URL to enable quick redirection'
@@ -878,9 +1030,8 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
 
                   <motion.div
                     variants={itemVariants}
-                    className={`pt-4 border-t ${
-                      theme === 'light' ? 'border-[#333]/10' : 'border-white/10'
-                    }`}
+                    className={`pt-4 border-t ${theme === 'light' ? 'border-[#333]/10' : 'border-white/10'
+                      }`}
                   >
                     <p className={theme === 'light' ? 'text-xs text-[#333]/40' : 'text-xs text-white/40'}>
                       Version 1.0

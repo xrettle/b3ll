@@ -18,15 +18,34 @@ const Schedule = dynamic(() => import('@/components/Schedule'), {
   loading: () => <div className="flex items-center justify-center h-40 p-8 bg-white/5 backdrop-blur-md rounded-xl">Loading schedule...</div>
 })
 
+// Visual effect components
+const MeshGradientBg = dynamic(() => import('@/components/ui/mesh-gradient-bg').then(mod => mod.default), {
+  ssr: false,
+})
+
+const FlickeringGrid = dynamic(() => import('@/components/ui/flickering-grid').then(mod => mod.default), {
+  ssr: false,
+})
+
 export default function Home() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [activeSchedule, setActiveSchedule] = useState<ScheduleType | null>(null);
   const [assemblyLetter, setAssemblyLetter] = useState("B");
 
+  // Visual effects state
+  const [gradientBgEnabled, setGradientBgEnabled] = useState(false);
+  const [flickeringGridEnabled, setFlickeringGridEnabled] = useState(false);
+
   // Initialize component and set default schedule
   useEffect(() => {
     setMounted(true);
+
+    // Load visual effects settings
+    if (typeof window !== 'undefined') {
+      setGradientBgEnabled(localStorage.getItem('bell-timer-effect-gradient-bg') === 'true');
+      setFlickeringGridEnabled(localStorage.getItem('bell-timer-effect-flickering-grid') === 'true');
+    }
 
     // Get saved schedule from localStorage if available
     if (typeof window !== 'undefined') {
@@ -79,6 +98,19 @@ export default function Home() {
     }
   }, [mounted]);
 
+  // Listen for visual effects settings changes from SettingsPanel
+  useEffect(() => {
+    const handleVisualEffectsChange = () => {
+      if (typeof window !== 'undefined') {
+        setGradientBgEnabled(localStorage.getItem('bell-timer-effect-gradient-bg') === 'true');
+        setFlickeringGridEnabled(localStorage.getItem('bell-timer-effect-flickering-grid') === 'true');
+      }
+    };
+
+    window.addEventListener('visual-effects-change', handleVisualEffectsChange);
+    return () => window.removeEventListener('visual-effects-change', handleVisualEffectsChange);
+  }, []);
+
   // Callback to update schedule
   const handleScheduleUpdate = useCallback((schedule: ScheduleType, letter?: string) => {
     setActiveSchedule(schedule);
@@ -104,6 +136,19 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
+      {/* Visual Effects Background */}
+      {gradientBgEnabled && <MeshGradientBg />}
+      {flickeringGridEnabled && (
+        <FlickeringGrid
+          className="fixed inset-0 z-0 pointer-events-none"
+          color="rgb(255, 255, 255)"
+          maxOpacity={0.15}
+          flickerChance={0.2}
+          squareSize={3}
+          gridGap={5}
+        />
+      )}
+
       <Header />
 
       <main className="relative">

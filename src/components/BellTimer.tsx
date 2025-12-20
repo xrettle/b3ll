@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { schedules, Schedule, Period, getCurrentDaySchedule, assemblyToPeriodMap, getAssemblyPeriodName } from '@/data/schedules';
 import { ScheduleSelector } from './ScheduleSelector';
+import { OuroborusEffect, OuroborusPresetKey } from './ui/ouroborus-effect';
 
 interface BellTimerProps {
   onScheduleUpdate?: (schedule: Schedule, assemblyLetter?: string) => void;
@@ -31,6 +32,10 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
   const [showCountdown, setShowCountdown] = useState<boolean>(false);
   const [isOutsideSchoolHours, setIsOutsideSchoolHours] = useState<boolean>(false);
 
+  // Ouroborus effect state
+  const [ouroborusEnabled, setOuroborusEnabled] = useState<boolean>(false);
+  const [ouroborusPreset, setOuroborusPreset] = useState<OuroborusPresetKey>('woodGrain');
+
   // Check for theme changes
   useEffect(() => {
     const checkTheme = () => {
@@ -49,6 +54,22 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  // Load and listen for Ouroborus effect settings
+  useEffect(() => {
+    const loadOuroborusSettings = () => {
+      if (typeof window !== 'undefined') {
+        setOuroborusEnabled(localStorage.getItem('bell-timer-effect-ouroborus') === 'true');
+        const preset = localStorage.getItem('bell-timer-ouroborus-preset') || 'woodGrain';
+        setOuroborusPreset(preset as OuroborusPresetKey);
+      }
+    };
+
+    loadOuroborusSettings();
+
+    window.addEventListener('visual-effects-change', loadOuroborusSettings);
+    return () => window.removeEventListener('visual-effects-change', loadOuroborusSettings);
   }, []);
 
   // Set mounted to true when component mounts on client
@@ -380,8 +401,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
 
       {/* Minimal background gradient - changes with theme */}
       <div className={`absolute inset-0 bg-gradient-to-r ${isLightTheme
-          ? 'from-[#f0f2f5] to-[#e4e6eb]'
-          : 'from-[#151718] to-[#292f33]'
+        ? 'from-[#f0f2f5] to-[#e4e6eb]'
+        : 'from-[#151718] to-[#292f33]'
         } z-0`}></div>
 
       {/* Grid pattern overlay - changes with theme */}
@@ -403,22 +424,31 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
         >
           {/* Countdown timer - Now showing first and always visible */}
           <div className="flex flex-col items-center space-y-4 mb-8">
-            <motion.div
-              className={`text-8xl font-bold ${getTextClass()} tracking-tighter`}
-              animate={{
-                scale: [1, 1.02, 1],
-                opacity: 1
-              }}
-              initial={{ opacity: 0 }}
-              transition={{
-                repeat: Infinity,
-                duration: 5,
-                ease: "easeInOut",
-                opacity: { delay: 0.7 }
-              }}
-            >
-              {formatCountdown()}
-            </motion.div>
+            <div className="relative">
+              {/* Ouroborus effect overlay */}
+              {ouroborusEnabled && (
+                <OuroborusEffect
+                  preset={ouroborusPreset}
+                  className="rounded-xl"
+                />
+              )}
+              <motion.div
+                className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
+                animate={{
+                  scale: [1, 1.02, 1],
+                  opacity: 1
+                }}
+                initial={{ opacity: 0 }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 5,
+                  ease: "easeInOut",
+                  opacity: { delay: 0.7 }
+                }}
+              >
+                {formatCountdown()}
+              </motion.div>
+            </div>
 
             <motion.div
               className={`text-sm uppercase tracking-wider ${getUntilClass()} mb-5`}
