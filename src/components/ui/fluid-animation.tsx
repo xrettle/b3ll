@@ -220,23 +220,34 @@ export function FluidAnimation({
         const morphUniformLocation = gl.getUniformLocation(program, 'uMorph');
         const gridUniformLocation = gl.getUniformLocation(program, 'uGrid');
 
-        // Resize handler
+        // Resize handler - use lower resolution for performance
         const resize = () => {
             const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
+            const dpr = Math.min(window.devicePixelRatio, 1); // Cap at 1x for performance
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
             gl.viewport(0, 0, canvas.width, canvas.height);
         };
 
         resize();
         window.addEventListener('resize', resize);
 
-        // Animation loop
+        // Animation loop with FPS limiting
         const startTime = Date.now();
         let animationId: number;
         let currentMorph = 0;
+        let lastFrameTime = 0;
+        const targetFPS = 30; // Limit to 30 FPS for performance
+        const frameInterval = 1000 / targetFPS;
 
-        const render = () => {
+        const render = (timestamp: number) => {
+            // FPS limiting
+            if (timestamp - lastFrameTime < frameInterval) {
+                animationId = requestAnimationFrame(render);
+                return;
+            }
+            lastFrameTime = timestamp;
+
             const currentTime = Date.now();
             const time = (currentTime - startTime) * 0.01;
 
@@ -269,7 +280,7 @@ export function FluidAnimation({
             animationId = requestAnimationFrame(render);
         };
 
-        render();
+        requestAnimationFrame(render);
 
         // Cleanup
         return () => {

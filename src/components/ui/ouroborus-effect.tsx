@@ -141,9 +141,10 @@ export function OuroborusEffect({ preset = 'woodGrain', className = '' }: Ourobo
         const resize = () => {
             const parent = canvas.parentElement;
             if (parent) {
-                canvas.width = parent.offsetWidth * window.devicePixelRatio;
-                canvas.height = parent.offsetHeight * window.devicePixelRatio;
-                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                const dpr = Math.min(window.devicePixelRatio, 1); // Cap at 1x for performance
+                canvas.width = parent.offsetWidth * dpr;
+                canvas.height = parent.offsetHeight * dpr;
+                ctx.scale(dpr, dpr);
             }
         };
 
@@ -156,7 +157,19 @@ export function OuroborusEffect({ preset = 'woodGrain', className = '' }: Ourobo
             return n - Math.floor(n);
         };
 
-        const animate = () => {
+        // FPS limiting for performance
+        let lastFrameTime = 0;
+        const targetFPS = 20; // Lower FPS for this overlay effect
+        const frameInterval = 1000 / targetFPS;
+
+        const animate = (timestamp: number) => {
+            // FPS limiting
+            if (timestamp - lastFrameTime < frameInterval) {
+                animationRef.current = requestAnimationFrame(animate);
+                return;
+            }
+            lastFrameTime = timestamp;
+
             time += 0.016 * config.perlinspeed * 2;
 
             const parent = canvas.parentElement;
@@ -168,8 +181,8 @@ export function OuroborusEffect({ preset = 'woodGrain', className = '' }: Ourobo
             // Clear canvas
             ctx.clearRect(0, 0, width, height);
 
-            // Draw distortion effect
-            const gridSize = Math.max(2, Math.floor(8 / config.perlinscale));
+            // Draw distortion effect - use larger grid for performance
+            const gridSize = Math.max(8, Math.floor(16 / config.perlinscale));
 
             for (let x = 0; x < width; x += gridSize) {
                 for (let y = 0; y < height; y += gridSize) {
@@ -206,7 +219,7 @@ export function OuroborusEffect({ preset = 'woodGrain', className = '' }: Ourobo
             animationRef.current = requestAnimationFrame(animate);
         };
 
-        animate();
+        requestAnimationFrame(animate);
 
         return () => {
             window.removeEventListener('resize', resize);

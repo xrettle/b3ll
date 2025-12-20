@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { schedules, Schedule, Period, getCurrentDaySchedule, assemblyToPeriodMap, getAssemblyPeriodName } from '@/data/schedules';
 import { ScheduleSelector } from './ScheduleSelector';
 import { OuroborusEffect, OuroborusPresetKey } from './ui/ouroborus-effect';
+import { LiquidGlass } from './ui/liquid-glass';
 
 interface BellTimerProps {
   onScheduleUpdate?: (schedule: Schedule, assemblyLetter?: string) => void;
@@ -424,31 +425,33 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
         >
           {/* Countdown timer - Now showing first and always visible */}
           <div className="flex flex-col items-center space-y-4 mb-8">
-            <div className="relative">
-              {/* Ouroborus effect overlay */}
-              {ouroborusEnabled && (
-                <OuroborusEffect
-                  preset={ouroborusPreset}
-                  className="rounded-xl"
-                />
-              )}
-              <motion.div
-                className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
-                animate={{
-                  scale: [1, 1.02, 1],
-                  opacity: 1
-                }}
-                initial={{ opacity: 0 }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 5,
-                  ease: "easeInOut",
-                  opacity: { delay: 0.7 }
-                }}
-              >
-                {formatCountdown()}
-              </motion.div>
-            </div>
+            <LiquidGlass intensity={0.8} borderRadius="1.5rem" className="p-8">
+              <div className="relative">
+                {/* Ouroborus effect overlay */}
+                {ouroborusEnabled && (
+                  <OuroborusEffect
+                    preset={ouroborusPreset}
+                    className="rounded-xl"
+                  />
+                )}
+                <motion.div
+                  className={`text-8xl font-bold ${getTextClass()} tracking-tighter relative z-10`}
+                  animate={{
+                    scale: [1, 1.02, 1],
+                    opacity: 1
+                  }}
+                  initial={{ opacity: 0 }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 5,
+                    ease: "easeInOut",
+                    opacity: { delay: 0.7 }
+                  }}
+                >
+                  {formatCountdown()}
+                </motion.div>
+              </div>
+            </LiquidGlass>
 
             <motion.div
               className={`text-sm uppercase tracking-wider ${getUntilClass()} mb-5`}

@@ -147,9 +147,9 @@ export default function Home() {
       {fluidAnimEnabled && (
         <FluidAnimation
           className="fixed inset-0 z-0"
-          complexity={10}
+          complexity={5}
           baseColor={0.5}
-          fluidSpeed={0.05}
+          fluidSpeed={0.03}
         />
       )}
       {gradientBgEnabled && <MeshGradientBg />}
