@@ -407,8 +407,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
               <motion.div
                 className={`text-8xl font-bold tracking-tighter relative z-10`}
                 style={{
-                  // Liquid glass gradient text effect
-                  background: isLightTheme
+                  // Liquid glass gradient text effect - using backgroundImage to avoid shorthand conflict
+                  backgroundImage: isLightTheme
                     ? 'linear-gradient(180deg, rgba(51,51,51,1) 0%, rgba(51,51,51,0.8) 40%, rgba(51,51,51,0.6) 60%, rgba(51,51,51,0.9) 100%)'
                     : 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.7) 35%, rgba(200,220,255,0.6) 50%, rgba(255,255,255,0.85) 65%, rgba(255,255,255,1) 100%)',
                   WebkitBackgroundClip: 'text',

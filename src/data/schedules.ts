@@ -186,6 +186,28 @@ export const schedules: { [key: string]: Schedule } = {
     periods: [
       { name: "Holiday", startTime: "0:00", endTime: "23:59", duration: "Enjoy your day off!" }
     ]
+  },
+  // Specific holiday schedules with proper names
+  veteransDay: {
+    name: "veteransDay",
+    displayName: "Veterans Day",
+    periods: [
+      { name: "Veterans Day", startTime: "0:00", endTime: "23:59", duration: "Thank you to all who served! 🇺🇸" }
+    ]
+  },
+  thanksgivingBreak: {
+    name: "thanksgivingBreak",
+    displayName: "Thanksgiving Break",
+    periods: [
+      { name: "Thanksgiving Break", startTime: "0:00", endTime: "23:59", duration: "Happy Thanksgiving! 🦃" }
+    ]
+  },
+  winterBreak: {
+    name: "winterBreak",
+    displayName: "Winter Break",
+    periods: [
+      { name: "Winter Break", startTime: "0:00", endTime: "23:59", duration: "Happy Holidays! 🎄❄️" }
+    ]
   }
 };
 
@@ -205,18 +227,18 @@ export const q2ScheduleOverrides: { [date: string]: string } = {
   // Week 11/3-11/7: Normal week (defaults apply)
 
   // Week 11/10-11/14: Veterans Day week
-  '2025-11-11': 'holiday', // Veterans Day - No School
+  '2025-11-11': 'veteransDay', // Veterans Day - No School
   '2025-11-14': 'fridayTutorial', // Friday with Tutorial
 
   // Week 11/17-11/21: Turkey Trot week
   '2025-11-21': 'monday', // Friday uses Monday Schedule
 
   // Week 11/24-11/28: Thanksgiving Break
-  '2025-11-24': 'holiday',
-  '2025-11-25': 'holiday',
-  '2025-11-26': 'holiday',
-  '2025-11-27': 'holiday',
-  '2025-11-28': 'holiday',
+  '2025-11-24': 'thanksgivingBreak',
+  '2025-11-25': 'thanksgivingBreak',
+  '2025-11-26': 'thanksgivingBreak',
+  '2025-11-27': 'thanksgivingBreak',
+  '2025-11-28': 'thanksgivingBreak',
 
   // Week 12/1-12/5
   '2025-12-05': 'minimumDay', // Minimum Day - Holiday Faire
@@ -227,19 +249,19 @@ export const q2ScheduleOverrides: { [date: string]: string } = {
   // Week 12/15-12/19
   '2025-12-19': 'monday', // Friday uses Monday Schedule
 
-  // December Break (12/22 - 1/2)
-  '2025-12-22': 'holiday',
-  '2025-12-23': 'holiday',
-  '2025-12-24': 'holiday',
-  '2025-12-25': 'holiday',
-  '2025-12-26': 'holiday',
-  '2025-12-27': 'holiday',
-  '2025-12-28': 'holiday',
-  '2025-12-29': 'holiday',
-  '2025-12-30': 'holiday',
-  '2025-12-31': 'holiday',
-  '2026-01-01': 'holiday',
-  '2026-01-02': 'holiday',
+  // Winter Break (12/22 - 1/2)
+  '2025-12-22': 'winterBreak',
+  '2025-12-23': 'winterBreak',
+  '2025-12-24': 'winterBreak',
+  '2025-12-25': 'winterBreak',
+  '2025-12-26': 'winterBreak',
+  '2025-12-27': 'winterBreak',
+  '2025-12-28': 'winterBreak',
+  '2025-12-29': 'winterBreak',
+  '2025-12-30': 'winterBreak',
+  '2025-12-31': 'winterBreak',
+  '2026-01-01': 'winterBreak',
+  '2026-01-02': 'winterBreak',
 
   // Week 1/5-1/9: Viking Showcase (normal schedules apply)
 
