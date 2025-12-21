@@ -40,6 +40,10 @@ const SnowEffect = dynamic(() => import('@/components/ui/snow-effect').then(mod 
   ssr: false,
 })
 
+const ShaderAnimation = dynamic(() => import('@/components/ui/shader-animation').then(mod => mod.default), {
+  ssr: false,
+})
+
 export default function Home() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -53,6 +57,7 @@ export default function Home() {
   const [flickeringGridEnabled, setFlickeringGridEnabled] = useState(false);
   const [fluidAnimEnabled, setFluidAnimEnabled] = useState(false);
   const [snowEffectEnabled, setSnowEffectEnabled] = useState(false);
+  const [shaderAnimEnabled, setShaderAnimEnabled] = useState(false);
 
   // Initialize component and set default schedule
   useEffect(() => {
@@ -73,6 +78,7 @@ export default function Home() {
       setFlickeringGridEnabled(localStorage.getItem('bell-timer-effect-flickering-grid') === 'true');
       setFluidAnimEnabled(localStorage.getItem('bell-timer-effect-fluid-anim') === 'true');
       setSnowEffectEnabled(localStorage.getItem('bell-timer-effect-snow') === 'true');
+      setShaderAnimEnabled(localStorage.getItem('bell-timer-effect-shader') === 'true');
     }
 
     // Get saved schedule from localStorage if available
@@ -189,6 +195,9 @@ export default function Home() {
       {/* Holiday Effects */}
       {isWinterBreakNow && <ChristmasConfetti />}
       {snowEffectEnabled && <SnowEffect intensity={5} />}
+
+      {/* Shader Animation */}
+      {shaderAnimEnabled && <ShaderAnimation />}
 
       <Header />
 

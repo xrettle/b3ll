@@ -500,6 +500,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     return 'rounded-square';
   });
 
+  // Shader animation effect setting
+  const [shaderAnimEnabled, setShaderAnimEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-effect-shader') === 'true';
+    }
+    return false;
+  });
+
   const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
 
   // The Konami code sequence
@@ -789,6 +797,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     }
   }, []);
 
+  const handleShaderAnimToggle = useCallback((enabled: boolean) => {
+    setShaderAnimEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-effect-shader', enabled.toString());
+      window.dispatchEvent(new CustomEvent('visual-effects-change'));
+    }
+  }, []);
+
   return (
     <>
       {/* Backdrop with AnimatePresence for clean exit */}
@@ -983,13 +999,13 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                               <button
                                 key={shape.id}
                                 onClick={() => handleFaviconShapeChange(shape.id)}
-                                className={`flex-1 py-2 px-1 rounded-lg text-center transition-all ${faviconShape === shape.id
-                                    ? theme === 'light'
-                                      ? 'bg-[#333] text-white'
-                                      : 'bg-white text-[#1a1e20]'
-                                    : theme === 'light'
-                                      ? 'bg-[#333]/10 text-[#333]/70 hover:bg-[#333]/20'
-                                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                                className={`flex-1 py-2 px-1 rounded-xl text-center transition-all ${faviconShape === shape.id
+                                  ? theme === 'light'
+                                    ? 'bg-[#333] text-white'
+                                    : 'bg-white text-[#1a1e20]'
+                                  : theme === 'light'
+                                    ? 'bg-[#333]/10 text-[#333]/70 hover:bg-[#333]/20'
+                                    : 'bg-white/10 text-white/70 hover:bg-white/20'
                                   }`}
                                 title={shape.label}
                               >
@@ -997,6 +1013,27 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                               </button>
                             ))}
                           </div>
+                        </div>
+
+                        {/* Shader Animation Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            🌀 Shader Animation
+                          </span>
+                          <button
+                            onClick={() => handleShaderAnimToggle(!shaderAnimEnabled)}
+                            className={`w-10 h-6 rounded-full transition-colors relative ${shaderAnimEnabled
+                              ? theme === 'light' ? 'bg-[#333]' : 'bg-white'
+                              : theme === 'light' ? 'bg-[#333]/20' : 'bg-white/20'
+                              }`}
+                          >
+                            <span
+                              className={`absolute top-1 w-4 h-4 rounded-full transition-all ${shaderAnimEnabled
+                                ? `right-1 ${theme === 'light' ? 'bg-white' : 'bg-[#1a1e20]'}`
+                                : `left-1 ${theme === 'light' ? 'bg-white' : 'bg-white/60'}`
+                                }`}
+                            />
+                          </button>
                         </div>
                       </div>
                     </motion.div>
