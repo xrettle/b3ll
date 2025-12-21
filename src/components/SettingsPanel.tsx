@@ -492,6 +492,14 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     return false;
   });
 
+  // Favicon shape setting
+  const [faviconShape, setFaviconShape] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bell-timer-favicon-shape') || 'rounded-square';
+    }
+    return 'rounded-square';
+  });
+
   const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
 
   // The Konami code sequence
@@ -774,6 +782,12 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
     }
   }, []);
 
+  const handleFaviconShapeChange = useCallback((shape: string) => {
+    setFaviconShape(shape);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bell-timer-favicon-shape', shape);
+    }
+  }, []);
 
   return (
     <>
@@ -952,6 +966,37 @@ export function SettingsPanel({ isOpen, onClose, children }: SettingsPanelProps)
                                 }`}
                             />
                           </button>
+                        </div>
+
+                        {/* Favicon Shape Selector */}
+                        <div className="space-y-2">
+                          <span className={`text-sm ${theme === 'light' ? 'text-[#333]/70' : 'text-white/70'}`}>
+                            Favicon Shape
+                          </span>
+                          <div className="flex gap-2">
+                            {[
+                              { id: 'rounded-square', icon: '▢', label: 'Rounded' },
+                              { id: 'square', icon: '◼', label: 'Square' },
+                              { id: 'circle', icon: '●', label: 'Circle' },
+                              { id: 'star', icon: '★', label: 'Star' },
+                            ].map((shape) => (
+                              <button
+                                key={shape.id}
+                                onClick={() => handleFaviconShapeChange(shape.id)}
+                                className={`flex-1 py-2 px-1 rounded-lg text-center transition-all ${faviconShape === shape.id
+                                    ? theme === 'light'
+                                      ? 'bg-[#333] text-white'
+                                      : 'bg-white text-[#1a1e20]'
+                                    : theme === 'light'
+                                      ? 'bg-[#333]/10 text-[#333]/70 hover:bg-[#333]/20'
+                                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                                  }`}
+                                title={shape.label}
+                              >
+                                <span className="text-lg">{shape.icon}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </motion.div>

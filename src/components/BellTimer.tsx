@@ -58,11 +58,16 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
   useEffect(() => {
     if (!mounted || !showCountdown) return;
 
+    // Get favicon shape from localStorage (default: rounded-square)
+    const faviconShape = typeof window !== 'undefined'
+      ? localStorage.getItem('bell-timer-favicon-shape') || 'rounded-square'
+      : 'rounded-square';
+
     // Extract period identifier (number or letter)
     const getPeriodIdentifier = (periodName: string): string => {
       // Match "Period X" or just letter/number
       const periodMatch = periodName.match(/Period\s*(\d+)/i);
-      if (periodMatch) return periodMatch[1];
+      if (periodMatch) return `Period ${periodMatch[1]}`;
 
       // For assembly letters A-H
       const letterMatch = periodName.match(/^([A-H])$/i);
@@ -75,7 +80,7 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
       if (periodName.toLowerCase() === 'advisory') return 'Advisory';
       if (periodName.toLowerCase() === 'free') return 'Free';
 
-      return periodName.slice(0, 8);
+      return periodName.slice(0, 12);
     };
 
     // Get color based on time remaining
@@ -91,8 +96,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
       return totalSeconds <= 30 && totalSeconds > 0;
     };
 
-    // Create dynamic favicon canvas
-    const createFavicon = (color: string): string => {
+    // Create dynamic favicon canvas with different shapes
+    const createFavicon = (color: string, shape: string): string => {
       const canvas = document.createElement('canvas');
       canvas.width = 32;
       canvas.height = 32;
@@ -100,22 +105,56 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
 
       if (!ctx) return '';
 
-      // Draw rounded square
-      const radius = 6;
-      ctx.beginPath();
-      ctx.moveTo(radius, 0);
-      ctx.lineTo(32 - radius, 0);
-      ctx.quadraticCurveTo(32, 0, 32, radius);
-      ctx.lineTo(32, 32 - radius);
-      ctx.quadraticCurveTo(32, 32, 32 - radius, 32);
-      ctx.lineTo(radius, 32);
-      ctx.quadraticCurveTo(0, 32, 0, 32 - radius);
-      ctx.lineTo(0, radius);
-      ctx.quadraticCurveTo(0, 0, radius, 0);
-      ctx.closePath();
-
       ctx.fillStyle = color;
-      ctx.fill();
+
+      switch (shape) {
+        case 'square':
+          // Simple square
+          ctx.fillRect(0, 0, 32, 32);
+          break;
+
+        case 'circle':
+          // Circle
+          ctx.beginPath();
+          ctx.arc(16, 16, 16, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+
+        case 'star':
+          // 5-pointed star
+          ctx.beginPath();
+          const cx = 16, cy = 16;
+          const outerRadius = 15, innerRadius = 6;
+          for (let i = 0; i < 10; i++) {
+            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            const angle = (i * Math.PI / 5) - Math.PI / 2;
+            const x = cx + radius * Math.cos(angle);
+            const y = cy + radius * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+          ctx.fill();
+          break;
+
+        case 'rounded-square':
+        default:
+          // Rounded square (default)
+          const radius = 6;
+          ctx.beginPath();
+          ctx.moveTo(radius, 0);
+          ctx.lineTo(32 - radius, 0);
+          ctx.quadraticCurveTo(32, 0, 32, radius);
+          ctx.lineTo(32, 32 - radius);
+          ctx.quadraticCurveTo(32, 32, 32 - radius, 32);
+          ctx.lineTo(radius, 32);
+          ctx.quadraticCurveTo(0, 32, 0, 32 - radius);
+          ctx.lineTo(0, radius);
+          ctx.quadraticCurveTo(0, 0, radius, 0);
+          ctx.closePath();
+          ctx.fill();
+          break;
+      }
 
       return canvas.toDataURL('image/png');
     };
@@ -134,8 +173,15 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
     // Calculate total seconds remaining
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
-    // Update document title
-    const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // Update document title with conditional hour display
+    let timeDisplay: string;
+    if (hours > 0) {
+      // Show HOUR:MIN:SEC when hours >= 1
+      timeDisplay = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      // Show MIN:SEC when under an hour
+      timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
     const periodId = getPeriodIdentifier(currentPeriod);
     document.title = `${timeDisplay} | ${periodId}`;
 
@@ -146,13 +192,13 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
       let isRed = true;
       flashInterval = setInterval(() => {
         const flashColor = isRed ? '#b84a2e' : '#a30000';
-        updateFavicon(createFavicon(flashColor));
+        updateFavicon(createFavicon(flashColor, faviconShape));
         isRed = !isRed;
       }, 500);
     } else {
       // Normal color based on urgency
       const color = getUrgencyColor(totalSeconds);
-      updateFavicon(createFavicon(color));
+      updateFavicon(createFavicon(color, faviconShape));
     }
 
     return () => {
