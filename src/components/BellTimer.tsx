@@ -109,8 +109,8 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
 
       switch (shape) {
         case 'square':
-          // Rounded square (slightly rounded corners)
-          const sqRadius = 4;
+          // Rounded square (moderately rounded corners)
+          const sqRadius = 6;
           ctx.beginPath();
           ctx.moveTo(sqRadius, 0);
           ctx.lineTo(32 - sqRadius, 0);
@@ -133,12 +133,12 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
           break;
 
         case 'star':
-          // 5-pointed star with rounded corners
+          // 5-pointed star - smaller and more rounded
           ctx.beginPath();
           ctx.lineJoin = 'round';
           ctx.lineCap = 'round';
           const cx = 16, cy = 16;
-          const outerRadius = 14, innerRadius = 6;
+          const outerRadius = 11, innerRadius = 5;
           for (let i = 0; i < 10; i++) {
             const r = i % 2 === 0 ? outerRadius : innerRadius;
             const angle = (i * Math.PI / 5) - Math.PI / 2;
@@ -149,16 +149,16 @@ function BellTimer({ onScheduleUpdate }: BellTimerProps) {
           }
           ctx.closePath();
           ctx.fill();
-          // Add rounded effect with stroke
+          // Add more rounded effect with thicker stroke
           ctx.strokeStyle = color;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 3;
           ctx.stroke();
           break;
 
         case 'rounded-square':
         default:
-          // Rounded square (default - more rounded)
-          const radius = 10;
+          // Rounded square (default - very rounded)
+          const radius = 12;
           ctx.beginPath();
           ctx.moveTo(radius, 0);
           ctx.lineTo(32 - radius, 0);

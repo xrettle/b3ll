@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
 
-export function ShaderAnimation() {
+export function MonochromeShader() {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<{
         camera: THREE.Camera
@@ -25,7 +25,7 @@ export function ShaderAnimation() {
       }
     `
 
-        // Fragment shader
+        // Fragment shader - Monochrome version (grayscale)
         const fragmentShader = `
       #define TWO_PI 6.2831853072
       #define PI 3.14159265359
@@ -39,14 +39,13 @@ export function ShaderAnimation() {
         float t = time*0.05;
         float lineWidth = 0.002;
 
-        vec3 color = vec3(0.0);
-        for(int j = 0; j < 3; j++){
-          for(int i=0; i < 5; i++){
-            color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
-          }
+        float intensity = 0.0;
+        for(int i=0; i < 5; i++){
+          intensity += lineWidth*float(i*i) / abs(fract(t + float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
         }
         
-        gl_FragColor = vec4(color[0],color[1],color[2],1.0);
+        // Monochrome - same intensity for all channels
+        gl_FragColor = vec4(intensity, intensity, intensity, 1.0);
       }
     `
 
@@ -142,4 +141,4 @@ export function ShaderAnimation() {
     )
 }
 
-export default ShaderAnimation
+export default MonochromeShader
